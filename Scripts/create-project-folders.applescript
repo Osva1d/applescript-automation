@@ -224,9 +224,15 @@ tell application "Finder"
     end try
 end tell
 
--- Otev?ení hlavní slo?ky projektu
+-- Otev?ení hlavní slo?ky projektu jako nové zálo?ky ve Finderu
 tell application "Finder"
-    open folder mainFolderPath
+    if (count of Finder windows) > 0 then
+        -- Pokud jsou otev?ená okna Finderu, otev?i jako novou zálo?ku
+        set target of tab -1 of front Finder window to folder mainFolderPath
+    else
+        -- Pokud ?ádné okno není otev?ené, otev?i normáln?
+        open folder mainFolderPath
+    end if
 end tell
 
 -- P?ipomenutí úkol?
