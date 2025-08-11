@@ -224,17 +224,6 @@ tell application "Finder"
     end try
 end tell
 
--- Otev?ení hlavní slo?ky projektu jako nové zálo?ky ve Finderu
-tell application "Finder"
-    if (count of Finder windows) > 0 then
-        -- Pokud jsou otev?ená okna Finderu, otev?i jako novou zálo?ku
-        set target of tab -1 of front Finder window to folder mainFolderPath
-    else
-        -- Pokud ?ádné okno není otev?ené, otev?i normáln?
-        open folder mainFolderPath
-    end if
-end tell
-
 -- P?ipomenutí úkol?
 display dialog "Slo?ky projektu byly úsp??n? vytvo?eny!" & return & return & "Nezapome?te:" & return & "• Stisknout tla?ítko 'p?ijmout p?id?lení' v Safari" & return & "• Nakopírovat zdrojová data do slo?ky 'zdroje'" buttons {"OK"} default button "OK" with title "Hotovo!"
 
