@@ -151,6 +151,7 @@ tell application "Safari"
             set projectInfo to projectNumber & " - " & clientName & " - " & projectName
             
             -- Kontrolní dialog s náhledem dat
+            activate  -- P?enese focus na AppleScript dialog
             display dialog "Extrahovaná data ze Safari:" & return & return & "?íslo: " & projectNumber & return & "Klient: " & clientName & return & "Projekt: " & projectName & return & return & "Vytvo?it projektové slo?ky?" buttons {"Zru?it", "Vytvo?it"} default button "Vytvo?it"
             
             if button returned of result is "Zru?it" then
@@ -158,6 +159,7 @@ tell application "Safari"
             end if
         else
             -- Fallback na ru?ní zadání
+            activate  -- P?enese focus na AppleScript dialog
             display dialog "Automatická extrakce se nezda?ila. Zadejte údaje ru?n?:" & return & "Formát: ?íslo - klient - název projektu" default answer "" buttons {"Zru?it", "OK"} default button "OK"
             if button returned of result is "Zru?it" then
                 return
@@ -166,6 +168,7 @@ tell application "Safari"
         end if
         
     on error errorMessage
+        activate  -- P?enese focus na AppleScript dialog
         display dialog "Chyba p?i ?tení dat ze Safari. Zadejte údaje ru?n?:" & return & "Formát: ?íslo - klient - název projektu" default answer "" buttons {"Zru?it", "OK"} default button "OK"
         if button returned of result is "Zru?it" then
             return
@@ -209,6 +212,7 @@ tell application "Finder"
         make new folder at folder mainFolderPath with properties {name:finalFolderName}
         
         -- Krátké potvrzení o úsp?chu
+        activate  -- P?enese focus na AppleScript dialog
         display dialog "Slo?ky úsp??n? vytvo?eny!" & return & return & "Nezapome?te:" & return & "• P?ijmout p?id?lení v Safari" & return & "• Nakopírovat zdroje" buttons {"OK"} default button "OK" with title "Hotovo!"
         
     on error
