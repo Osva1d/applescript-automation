@@ -1,34 +1,26 @@
--- Automatizace zalo?ení projektov?ch slo?ek
--- Autor: AppleScript pro zakázkov? systém
--- Verze: 1.0
-
--- Získání aktuálního roku a posledních dvoj?íslí
-set currentYear to year of (current date)
-set currentYearStr to currentYear as string
-set lastTwoDigits to text -2 thru -1 of currentYearStr
-
--- Získání aktuálního roku a posledních dvoj?íslí
-set currentYear to year of (current date)
-set currentYearStr to currentYear as string
-set lastTwoDigits to text -2 thru -1 of currentYearStr
-
--- Pevné umíst?ní pro projektové slo?ky (upravte cestu podle va?ich pot?eb)
-set folderLocation to (path to desktop) -- M??ete zm?nit na: (path to documents folder), (path to home folder), nebo konkrétní cestu
--- Pro konkrétní cestu pou?ijte: set folderLocation to "Macintosh HD:Users:Va?eJméno:Projekty:" as alias
-
--- Funkce pro o?i?t?ní textu od bíl?ch znak? a nebezpe?n?ch znak?
+-- Opraven? skript pro extrakci dat ze Safari podle HTML struktury
 on cleanText(inputText)
     -- Odstran?ní bíl?ch znak? na za?átku a konci
     set cleanedText to inputText
     
     -- Odstran?ní bíl?ch znak? ze za?átku
     repeat while cleanedText starts with " " or cleanedText starts with tab or cleanedText starts with return
-        set cleanedText to text 2 thru -1 of cleanedText
+        if length of cleanedText > 1 then
+            set cleanedText to text 2 thru -1 of cleanedText
+        else
+            set cleanedText to ""
+            exit repeat
+        end if
     end repeat
     
     -- Odstran?ní bíl?ch znak? z konce
     repeat while cleanedText ends with " " or cleanedText ends with tab or cleanedText ends with return
-        set cleanedText to text 1 thru -2 of cleanedText
+        if length of cleanedText > 1 then
+            set cleanedText to text 1 thru -2 of cleanedText
+        else
+            set cleanedText to ""
+            exit repeat
+        end if
     end repeat
     
     -- Nahrazení nebezpe?n?ch znak? pro názvy slo?ek
@@ -54,6 +46,7 @@ on cleanText(inputText)
     
     set AppleScript's text item delimiters to ""
     
+    return cleanedText
 end cleanText
 
 -- Získání aktuálního roku a posledních dvoj?íslí
@@ -61,11 +54,10 @@ set currentYear to year of (current date)
 set currentYearStr to currentYear as string
 set lastTwoDigits to text -2 thru -1 of currentYearStr
 
--- Pevné umíst?ní pro projektové slo?ky (upravte cestu podle va?ich pot?eb)
-set folderLocation to (path to desktop) -- M??ete zm?nit na: (path to documents folder), (path to home folder), nebo konkrétní cestu
--- Pro konkrétní cestu pou?ijte: set folderLocation to "Macintosh HD:Users:Va?eJméno:Projekty:" as alias
+-- Pevné umíst?ní pro projektové slo?ky
+set folderLocation to (path to desktop)
 
--- Extrakce dat ze Safari
+-- Extrakce dat ze Safari pomocí p?esn?ch CSS selektor?
 tell application "Safari"
     if not (exists front document) then
         display dialog "Nejd?íve otev?ete zakázkov? list v Safari!" buttons {"OK"} default button "OK"
@@ -73,81 +65,80 @@ tell application "Safari"
     end if
     
     try
-        -- Extrakce dat pomocí JavaScript
+        -- Extrakce dat pomocí JavaScript a p?esn?ch selektor?
         set extractedData to do JavaScript "
             var result = {};
             
-            // Extrakce ?ísla zakázky (hledáme 'Zakázka ?íslo: X.XXX')
-            var zakazkaElement = document.querySelector('span.Header1');
-            if (zakazkaElement && zakazkaElement.textContent.includes('Zakázka ?íslo:')) {
-                var zakazkaText = zakazkaElement.textContent;
-                var match = zakazkaText.match(/Zakázka ?íslo:\\s*(\\d+\\.\\d+)/);
+            // Extrakce ?ísla zakázky ze span.Header1
+            var zakazkaSpan = document.querySelector('span.Header1');
+            if (zakazkaSpan) {
+                var text = zakazkaSpan.textContent;
+                var match = text.match(/Zakázka ?íslo:\\s*(\\d+\\.\\d+)/);
                 if (match) {
                     result.projectNumber = match[1].replace('.', '');
                 }
             }
             
-            // Extrakce názvu projektu (hledáme v tabulce ?ádek s 'Projekt:')
-            var tables = document.querySelectorAll('table.TabVertic');
-            for (var i = 0; i < tables.length; i++) {
-                var rows = tables[i].querySelectorAll('tr');
-                for (var j = 0; j < rows.length; j++) {
-                    var cells = rows[j].querySelectorAll('td');
-                    if (cells.length >= 2 && cells[0].textContent.includes('Projekt:')) {
-                        result.projectName = cells[1].textContent.trim();
+            // Extrakce projektu z tabulky - hledáme td.TabColHead obsahující 'Projekt:'
+            var allTabColHeads = document.querySelectorAll('td.TabColHead');
+            for (var i = 0; i < allTabColHeads.length; i++) {
+                if (allTabColHeads[i].textContent.trim() === 'Projekt:') {
+                    var nextTd = allTabColHeads[i].nextElementSibling;
+                    if (nextTd && nextTd.classList.contains('TabValue')) {
+                        result.projectName = nextTd.textContent.trim();
                         break;
                     }
                 }
-                if (result.projectName) break;
             }
             
-            // Extrakce klienta (hledáme v tabulce ?ádek s 'Klient:')
-            for (var i = 0; i < tables.length; i++) {
-                var rows = tables[i].querySelectorAll('tr');
-                for (var j = 0; j < rows.length; j++) {
-                    var cells = rows[j].querySelectorAll('td');
-                    if (cells.length >= 2 && cells[0].textContent.includes('Klient:')) {
-                        result.clientName = cells[1].textContent.trim();
+            // Extrakce klienta z tabulky - hledáme td.TabColHead obsahující 'Klient:'
+            for (var i = 0; i < allTabColHeads.length; i++) {
+                if (allTabColHeads[i].textContent.trim() === 'Klient:') {
+                    var nextTd = allTabColHeads[i].nextElementSibling;
+                    if (nextTd && nextTd.classList.contains('TabValue')) {
+                        result.clientName = nextTd.textContent.trim();
                         break;
                     }
                 }
-                if (result.clientName) break;
             }
             
             // Vrácení dat jako JSON string
             JSON.stringify(result);
         " in front document
         
-        -- Parsování JSON dat
-        set dataRecord to extractedData
-        
-        -- Extrakce jednotliv?ch hodnot z JSON (jednoduch? parsing)
+        -- Parsování JSON dat (zjednodu?ené)
         set projectNumber to ""
         set projectName to ""
         set clientName to ""
         
-        -- Parsování ?ísla projektu
-        if dataRecord contains "\"projectNumber\":\"" then
-            set startPos to offset of "\"projectNumber\":\"" in dataRecord
-            set tempString to text (startPos + 17) thru -1 of dataRecord
+        -- Extrakce ?ísla projektu
+        if extractedData contains "\"projectNumber\":\"" then
+            set startPos to offset of "\"projectNumber\":\"" in extractedData
+            set tempString to text (startPos + 17) thru -1 of extractedData
             set endPos to offset of "\"" in tempString
-            set projectNumber to text 1 thru (endPos - 1) of tempString
+            if endPos > 0 then
+                set projectNumber to text 1 thru (endPos - 1) of tempString
+            end if
         end if
         
-        -- Parsování názvu projektu
-        if dataRecord contains "\"projectName\":\"" then
-            set startPos to offset of "\"projectName\":\"" in dataRecord
-            set tempString to text (startPos + 15) thru -1 of dataRecord
+        -- Extrakce názvu projektu
+        if extractedData contains "\"projectName\":\"" then
+            set startPos to offset of "\"projectName\":\"" in extractedData
+            set tempString to text (startPos + 15) thru -1 of extractedData
             set endPos to offset of "\"" in tempString
-            set projectName to text 1 thru (endPos - 1) of tempString
+            if endPos > 0 then
+                set projectName to text 1 thru (endPos - 1) of tempString
+            end if
         end if
         
-        -- Parsování klienta
-        if dataRecord contains "\"clientName\":\"" then
-            set startPos to offset of "\"clientName\":\"" in dataRecord
-            set tempString to text (startPos + 14) thru -1 of dataRecord
+        -- Extrakce klienta
+        if extractedData contains "\"clientName\":\"" then
+            set startPos to offset of "\"clientName\":\"" in extractedData
+            set tempString to text (startPos + 14) thru -1 of extractedData
             set endPos to offset of "\"" in tempString
-            set clientName to text 1 thru (endPos - 1) of tempString
+            if endPos > 0 then
+                set clientName to text 1 thru (endPos - 1) of tempString
+            end if
         end if
         
         -- O?i?t?ní v?ech text?
@@ -156,12 +147,21 @@ tell application "Safari"
         set projectName to my cleanText(projectName)
         
         -- Sestavení finálního názvu
-        set projectInfo to projectNumber & " - " & clientName & " - " & projectName
-        
-        -- Zobrazení extrahovan?ch dat pro kontrolu
-        display dialog "Extrahovaná data:" & return & return & "?íslo: " & projectNumber & return & "Klient: " & clientName & return & "Projekt: " & projectName & return & return & "Finální název: " & projectInfo & return & return & "Pokra?ovat?" buttons {"Zru?it", "Ano"} default button "Ano"
-        if button returned of result is "Zru?it" then
-            return
+        if projectNumber is not "" and clientName is not "" and projectName is not "" then
+            set projectInfo to projectNumber & " - " & clientName & " - " & projectName
+            
+            -- Zobrazení extrahovan?ch dat pro kontrolu
+            display dialog "Extrahovaná data:" & return & return & "?íslo: " & projectNumber & return & "Klient: " & clientName & return & "Projekt: " & projectName & return & return & "Finální název: " & projectInfo & return & return & "Pokra?ovat?" buttons {"Zru?it", "Ano"} default button "Ano"
+            if button returned of result is "Zru?it" then
+                return
+            end if
+        else
+            -- Fallback na ru?ní zadání
+            display dialog "Automatická extrakce se nezda?ila:" & return & "?íslo: '" & projectNumber & "'" & return & "Klient: '" & clientName & "'" & return & "Projekt: '" & projectName & "'" & return & return & "Zadejte údaje ru?n?:" default answer "" buttons {"Zru?it", "OK"} default button "OK"
+            if button returned of result is "Zru?it" then
+                return
+            end if
+            set projectInfo to text returned of result
         end if
         
     on error errorMessage
@@ -173,7 +173,13 @@ tell application "Safari"
     end try
 end tell
 
--- Extrakce ?ísla projektu (první ?ást p?ed první poml?kou)
+-- Kontrola, zda bylo n?co získáno
+if projectInfo is "" then
+    display dialog "Nebyla získána ?ádná data. Skript bude ukon?en." buttons {"OK"} default button "OK"
+    return
+end if
+
+-- Extrakce ?ísla projektu z finálního ?et?zce
 set AppleScript's text item delimiters to " - "
 set projectParts to text items of projectInfo
 set AppleScript's text item delimiters to ""
@@ -184,10 +190,6 @@ if (count of projectParts) < 3 then
 end if
 
 set projectNumber to item 1 of projectParts
-
--- Pevné umíst?ní pro projektové slo?ky (upravte cestu podle va?ich pot?eb)
-set folderLocation to (path to desktop) -- M??ete zm?nit na: (path to documents folder), (path to home folder), nebo konkrétní cestu
--- Pro konkrétní cestu pou?ijte: set folderLocation to "Macintosh HD:Users:Va?eJméno:Projekty:" as alias
 
 -- Vytvo?ení hlavní slo?ky projektu
 set mainFolderPath to (folderLocation as string) & projectInfo & ":"
@@ -235,7 +237,5 @@ display dialog "Chcete otev?ít Safari pro p?ijmutí zakázky?" buttons {"Ne", "Ano
 if button returned of result is "Ano" then
     tell application "Safari"
         activate
-        -- Zde by bylo mo?né p?idat specifickou URL, pokud je známa
-        -- open location "https://vase-zakazky.cz/pridat-zakazku"
     end tell
 end if
