@@ -224,6 +224,13 @@ tell application "Finder"
     end try
 end tell
 
+-- Otev?en’ hlavn’ slo?ky projektu (vypnuto)
+(*
+tell application "Finder"
+    open folder mainFolderPath
+end tell
+*)
+
 -- P?ipomenut’ œkol?
 display dialog "Slo?ky projektu byly œsp??n? vytvo?eny!" & return & return & "Nezapome?te:" & return & "¥ Stisknout tla?’tko 'p?ijmout p?id?len’' v Safari" & return & "¥ Nakop’rovat zdrojov‡ data do slo?ky 'zdroje'" buttons {"OK"} default button "OK" with title "Hotovo!"
 
