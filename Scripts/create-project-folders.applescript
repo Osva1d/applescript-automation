@@ -55,7 +55,7 @@ set currentYearStr to currentYear as string
 set lastTwoDigits to text -2 thru -1 of currentYearStr
 
 -- Pevné umíst?ní pro projektové slo?ky
-set folderLocation to (path to desktop)
+set folderLocation to "/Volumes/StudioTwo_T5/MARA/Tisk Studio Two" as POSIX file as alias
 
 -- Extrakce dat ze Safari pomocí p?esn?ch CSS selektor?
 tell application "Safari"
