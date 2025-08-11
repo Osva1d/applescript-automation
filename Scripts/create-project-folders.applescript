@@ -1,4 +1,4 @@
--- Opraven? skript pro extrakci dat ze Safari podle HTML struktury
+-- Zjednodu?en? skript pro vytvá?ení projektov?ch slo?ek
 on cleanText(inputText)
     -- Odstran?ní bíl?ch znak? na za?átku a konci
     set cleanedText to inputText
@@ -106,7 +106,7 @@ tell application "Safari"
             JSON.stringify(result);
         " in front document
         
-        -- Parsování JSON dat (zjednodu?ené)
+        -- Parsování JSON dat
         set projectNumber to ""
         set projectName to ""
         set clientName to ""
@@ -146,18 +146,19 @@ tell application "Safari"
         set clientName to my cleanText(clientName)
         set projectName to my cleanText(projectName)
         
-        -- Sestavení finálního názvu
+        -- Sestavení finálního názvu a zobrazení kontrolního dialogu
         if projectNumber is not "" and clientName is not "" and projectName is not "" then
             set projectInfo to projectNumber & " - " & clientName & " - " & projectName
             
-            -- Zobrazení extrahovan?ch dat pro kontrolu
-            display dialog "Extrahovaná data:" & return & return & "?íslo: " & projectNumber & return & "Klient: " & clientName & return & "Projekt: " & projectName & return & return & "Finální název: " & projectInfo & return & return & "Pokra?ovat?" buttons {"Zru?it", "Ano"} default button "Ano"
+            -- Kontrolní dialog s náhledem dat
+            display dialog "Extrahovaná data ze Safari:" & return & return & "?íslo: " & projectNumber & return & "Klient: " & clientName & return & "Projekt: " & projectName & return & return & "Vytvo?it projektové slo?ky?" buttons {"Zru?it", "Vytvo?it"} default button "Vytvo?it"
+            
             if button returned of result is "Zru?it" then
                 return
             end if
         else
             -- Fallback na ru?ní zadání
-            display dialog "Automatická extrakce se nezda?ila:" & return & "?íslo: '" & projectNumber & "'" & return & "Klient: '" & clientName & "'" & return & "Projekt: '" & projectName & "'" & return & return & "Zadejte údaje ru?n?:" default answer "" buttons {"Zru?it", "OK"} default button "OK"
+            display dialog "Automatická extrakce se nezda?ila. Zadejte údaje ru?n?:" & return & "Formát: ?íslo - klient - název projektu" default answer "" buttons {"Zru?it", "OK"} default button "OK"
             if button returned of result is "Zru?it" then
                 return
             end if
@@ -165,7 +166,7 @@ tell application "Safari"
         end if
         
     on error errorMessage
-        display dialog "Chyba p?i ?tení dat ze Safari:" & return & errorMessage & return & return & "Zadejte údaje ru?n?:" default answer "" buttons {"Zru?it", "OK"} default button "OK"
+        display dialog "Chyba p?i ?tení dat ze Safari. Zadejte údaje ru?n?:" & return & "Formát: ?íslo - klient - název projektu" default answer "" buttons {"Zru?it", "OK"} default button "OK"
         if button returned of result is "Zru?it" then
             return
         end if
@@ -191,45 +192,26 @@ end if
 
 set projectNumber to item 1 of projectParts
 
--- Vytvo?ení hlavní slo?ky projektu
+-- TEPRVE TE? se vytvo?í slo?ky (po potvrzení u?ivatele)
 set mainFolderPath to (folderLocation as string) & projectInfo & ":"
 tell application "Finder"
     try
         make new folder at folderLocation with properties {name:projectInfo}
-    on error
-        display dialog "Chyba p?i vytvá?ení hlavní slo?ky! Mo?ná ji? existuje." buttons {"OK"} default button "OK"
-        return
-    end try
-end tell
-
--- Vytvo?ení podslo?ek
-set subfolders to {"pracovní", "zdroje"}
-tell application "Finder"
-    repeat with subfolder in subfolders
-        try
+        
+        -- Vytvo?ení podslo?ek
+        set subfolders to {"pracovní", "zdroje"}
+        repeat with subfolder in subfolders
             make new folder at folder mainFolderPath with properties {name:subfolder}
-        on error
-            display dialog "Chyba p?i vytvá?ení slo?ky: " & subfolder buttons {"OK"} default button "OK"
-        end try
-    end repeat
-end tell
-
--- Vytvo?ení finální slo?ky s názvem podle klí?e (poslední dvoj?íslí roku_?íslo projektu)
-set finalFolderName to lastTwoDigits & "_" & projectNumber
-tell application "Finder"
-    try
+        end repeat
+        
+        -- Vytvo?ení finální slo?ky s názvem podle klí?e
+        set finalFolderName to lastTwoDigits & "_" & projectNumber
         make new folder at folder mainFolderPath with properties {name:finalFolderName}
+        
+        -- Krátké potvrzení o úsp?chu
+        display dialog "Slo?ky úsp??n? vytvo?eny!" & return & return & "Nezapome?te:" & return & "• P?ijmout p?id?lení v Safari" & return & "• Nakopírovat zdroje" buttons {"OK"} default button "OK" with title "Hotovo!"
+        
     on error
-        display dialog "Chyba p?i vytvá?ení finální slo?ky!" buttons {"OK"} default button "OK"
+        display dialog "Chyba p?i vytvá?ení slo?ek! Mo?ná ji? existují." buttons {"OK"} default button "OK"
     end try
 end tell
-
--- Otev?ení hlavní slo?ky projektu (vypnuto)
-(*
-tell application "Finder"
-    open folder mainFolderPath
-end tell
-*)
-
--- P?ipomenutí úkol?
-display dialog "Slo?ky projektu byly úsp??n? vytvo?eny!" & return & return & "Nezapome?te:" & return & "• Stisknout tla?ítko 'p?ijmout p?id?lení' v Safari" & return & "• Nakopírovat zdrojová data do slo?ky 'zdroje'" buttons {"OK"} default button "OK" with title "Hotovo!"
