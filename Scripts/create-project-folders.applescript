@@ -7,6 +7,47 @@ set currentYear to year of (current date)
 set currentYearStr to currentYear as string
 set lastTwoDigits to text -2 thru -1 of currentYearStr
 
+-- Funkce pro o?i?t?n’ textu od b’l?ch znak? a nebezpe?n?ch znak?
+on cleanText(inputText)
+    -- Odstran?n’ b’l?ch znak? na za?‡tku a konci
+    set cleanedText to inputText
+    
+    -- Odstran?n’ b’l?ch znak? ze za?‡tku
+    repeat while cleanedText starts with " " or cleanedText starts with tab or cleanedText starts with return
+        set cleanedText to text 2 thru -1 of cleanedText
+    end repeat
+    
+    -- Odstran?n’ b’l?ch znak? z konce
+    repeat while cleanedText ends with " " or cleanedText ends with tab or cleanedText ends with return
+        set cleanedText to text 1 thru -2 of cleanedText
+    end repeat
+    
+    -- Nahrazen’ nebezpe?n?ch znak? pro n‡zvy slo?ek
+    set dangerousChars to {"/", "\\", ":", "*", "?", "\"", "<", ">", "|", return, tab}
+    set replacementChar to "_"
+    
+    repeat with dangerousChar in dangerousChars
+        set AppleScript's text item delimiters to dangerousChar
+        set textParts to text items of cleanedText
+        set AppleScript's text item delimiters to replacementChar
+        set cleanedText to textParts as string
+    end repeat
+    
+    set AppleScript's text item delimiters to ""
+    
+    -- Odstran?n’ v’cen‡sobn?ch podtr?’tek
+    repeat while cleanedText contains "__"
+        set AppleScript's text item delimiters to "__"
+        set textParts to text items of cleanedText
+        set AppleScript's text item delimiters to "_"
+        set cleanedText to textParts as string
+    end repeat
+    
+    set AppleScript's text item delimiters to ""
+    
+    return cleanedText
+end cleanText
+
 -- Extrakce dat ze Safari
 tell application "Safari"
     if not (exists front document) then
@@ -24,7 +65,12 @@ tell application "Safari"
             set textItems to paragraphs of pageText
             repeat with textItem in textItems
                 if textItem contains "Zak‡zka ?’slo:" then
-                    set projectNumber to text ((offset of "Zak‡zka ?’slo: " in textItem) + 14) thru -1 of textItem
+                    set rawNumber to text ((offset of "Zak‡zka ?’slo: " in textItem) + 14) thru -1 of textItem
+                    -- Odstran?n’ te?ky z ?’sla (nap?. "7.261" -> "7261")
+                    set AppleScript's text item delimiters to "."
+                    set numberParts to text items of rawNumber
+                    set AppleScript's text item delimiters to ""
+                    set projectNumber to numberParts as string
                     exit repeat
                 end if
             end repeat
@@ -58,6 +104,11 @@ tell application "Safari"
             end repeat
         end if
         
+        -- O?i?t?n’ v?ech text?
+        set projectNumber to cleanText(projectNumber)
+        set clientName to cleanText(clientName)
+        set projectName to cleanText(projectName)
+        
         -- Sestaven’ fin‡ln’ho n‡zvu
         set projectInfo to projectNumber & " - " & clientName & " - " & projectName
         
@@ -75,12 +126,6 @@ tell application "Safari"
         set projectInfo to text returned of result
     end try
 end tell
-
--- Kontrola, zda bylo n?co z’sk‡no
-if projectInfo is "" then
-    display dialog "Nebyla z’sk‡na ?‡dn‡ data. Skript bude ukon?en." buttons {"OK"} default button "OK"
-    return
-end if
 
 -- Extrakce ?’sla projektu (prvn’ ?‡st p?ed prvn’ poml?kou)
 set AppleScript's text item delimiters to " - "
