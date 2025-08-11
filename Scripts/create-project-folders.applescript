@@ -23,6 +23,16 @@ on cleanText(inputText)
         end if
     end repeat
     
+    -- Odstran?n’ zdvojen?ch mezer uvnit? textu
+    repeat while cleanedText contains "  "
+        set AppleScript's text item delimiters to "  "
+        set textParts to text items of cleanedText
+        set AppleScript's text item delimiters to " "
+        set cleanedText to textParts as string
+    end repeat
+    
+    set AppleScript's text item delimiters to ""
+    
     -- Nahrazen’ nebezpe?n?ch znak? pro n‡zvy slo?ek
     set dangerousChars to {"/", "\\", ":", "*", "?", "\"", "<", ">", "|", return, tab}
     set replacementChar to "_"
