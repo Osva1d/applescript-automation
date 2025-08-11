@@ -56,52 +56,81 @@ tell application "Safari"
     end if
     
     try
-        -- Extrakce ?’sla zak‡zky (hled‡me text "Zak‡zka ?’slo: X.XXX")
-        set pageText to do JavaScript "document.body.innerText" in front document
+        -- Extrakce dat pomoc’ JavaScript
+        set extractedData to do JavaScript "
+            var result = {};
+            
+            // Extrakce ?’sla zak‡zky (hled‡me 'Zak‡zka ?’slo: X.XXX')
+            var zakazkaElement = document.querySelector('span.Header1');
+            if (zakazkaElement && zakazkaElement.textContent.includes('Zak‡zka ?’slo:')) {
+                var zakazkaText = zakazkaElement.textContent;
+                var match = zakazkaText.match(/Zak‡zka ?’slo:\\s*(\\d+\\.\\d+)/);
+                if (match) {
+                    result.projectNumber = match[1].replace('.', '');
+                }
+            }
+            
+            // Extrakce n‡zvu projektu (hled‡me v tabulce ?‡dek s 'Projekt:')
+            var tables = document.querySelectorAll('table.TabVertic');
+            for (var i = 0; i < tables.length; i++) {
+                var rows = tables[i].querySelectorAll('tr');
+                for (var j = 0; j < rows.length; j++) {
+                    var cells = rows[j].querySelectorAll('td');
+                    if (cells.length >= 2 && cells[0].textContent.includes('Projekt:')) {
+                        result.projectName = cells[1].textContent.trim();
+                        break;
+                    }
+                }
+                if (result.projectName) break;
+            }
+            
+            // Extrakce klienta (hled‡me v tabulce ?‡dek s 'Klient:')
+            for (var i = 0; i < tables.length; i++) {
+                var rows = tables[i].querySelectorAll('tr');
+                for (var j = 0; j < rows.length; j++) {
+                    var cells = rows[j].querySelectorAll('td');
+                    if (cells.length >= 2 && cells[0].textContent.includes('Klient:')) {
+                        result.clientName = cells[1].textContent.trim();
+                        break;
+                    }
+                }
+                if (result.clientName) break;
+            }
+            
+            // Vr‡cen’ dat jako JSON string
+            JSON.stringify(result);
+        " in front document
         
-        -- Hled‡n’ ?’sla zak‡zky
+        -- Parsov‡n’ JSON dat
+        set dataRecord to extractedData
+        
+        -- Extrakce jednotliv?ch hodnot z JSON (jednoduch? parsing)
         set projectNumber to ""
-        if pageText contains "Zak‡zka ?’slo:" then
-            set textItems to paragraphs of pageText
-            repeat with textItem in textItems
-                if textItem contains "Zak‡zka ?’slo:" then
-                    set rawNumber to text ((offset of "Zak‡zka ?’slo: " in textItem) + 14) thru -1 of textItem
-                    -- Odstran?n’ te?ky z ?’sla (nap?. "7.261" -> "7261")
-                    set AppleScript's text item delimiters to "."
-                    set numberParts to text items of rawNumber
-                    set AppleScript's text item delimiters to ""
-                    set projectNumber to numberParts as string
-                    exit repeat
-                end if
-            end repeat
-        end if
-        
-        -- Extrakce n‡zvu projektu (hled‡me ?‡dek s "Projekt:")
         set projectName to ""
-        if pageText contains "Projekt:" then
-            set textItems to paragraphs of pageText
-            repeat with i from 1 to count of textItems
-                if (item i of textItems) contains "Projekt:" then
-                    if i < count of textItems then
-                        set projectName to item (i + 1) of textItems
-                        exit repeat
-                    end if
-                end if
-            end repeat
+        set clientName to ""
+        
+        -- Parsov‡n’ ?’sla projektu
+        if dataRecord contains "\"projectNumber\":\"" then
+            set startPos to offset of "\"projectNumber\":\"" in dataRecord
+            set tempString to text (startPos + 17) thru -1 of dataRecord
+            set endPos to offset of "\"" in tempString
+            set projectNumber to text 1 thru (endPos - 1) of tempString
         end if
         
-        -- Extrakce klienta (hled‡me "Klient:" a n‡sleduj’c’ ?‡dek)
-        set clientName to ""
-        if pageText contains "Klient:" then
-            set textItems to paragraphs of pageText
-            repeat with i from 1 to count of textItems
-                if (item i of textItems) contains "Klient:" then
-                    if i < count of textItems then
-                        set clientName to item (i + 1) of textItems
-                        exit repeat
-                    end if
-                end if
-            end repeat
+        -- Parsov‡n’ n‡zvu projektu
+        if dataRecord contains "\"projectName\":\"" then
+            set startPos to offset of "\"projectName\":\"" in dataRecord
+            set tempString to text (startPos + 15) thru -1 of dataRecord
+            set endPos to offset of "\"" in tempString
+            set projectName to text 1 thru (endPos - 1) of tempString
+        end if
+        
+        -- Parsov‡n’ klienta
+        if dataRecord contains "\"clientName\":\"" then
+            set startPos to offset of "\"clientName\":\"" in dataRecord
+            set tempString to text (startPos + 14) thru -1 of dataRecord
+            set endPos to offset of "\"" in tempString
+            set clientName to text 1 thru (endPos - 1) of tempString
         end if
         
         -- O?i?t?n’ v?ech text?
@@ -113,7 +142,7 @@ tell application "Safari"
         set projectInfo to projectNumber & " - " & clientName & " - " & projectName
         
         -- Zobrazen’ extrahovan?ch dat pro kontrolu
-        display dialog "Extrahovan‡ data:" & return & return & projectInfo & return & return & "Pokra?ovat?" buttons {"Zru?it", "Ano"} default button "Ano"
+        display dialog "Extrahovan‡ data:" & return & return & "?’slo: " & projectNumber & return & "Klient: " & clientName & return & "Projekt: " & projectName & return & return & "Fin‡ln’ n‡zev: " & projectInfo & return & return & "Pokra?ovat?" buttons {"Zru?it", "Ano"} default button "Ano"
         if button returned of result is "Zru?it" then
             return
         end if
