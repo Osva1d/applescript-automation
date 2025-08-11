@@ -7,13 +7,78 @@ set currentYear to year of (current date)
 set currentYearStr to currentYear as string
 set lastTwoDigits to text -2 thru -1 of currentYearStr
 
--- Dialogové okno pro zadání údaj? projektu
-display dialog "Zadejte údaje projektu:" & return & return & "Formát: ?íslo projektu - klient - název projektu" default answer "" with title "Nov? projekt"
-set projectInfo to text returned of result
+-- Extrakce dat ze Safari
+tell application "Safari"
+    if not (exists front document) then
+        display dialog "Nejd?íve otev?ete zakázkov? list v Safari!" buttons {"OK"} default button "OK"
+        return
+    end if
+    
+    try
+        -- Extrakce ?ísla zakázky (hledáme text "Zakázka ?íslo: X.XXX")
+        set pageText to do JavaScript "document.body.innerText" in front document
+        
+        -- Hledání ?ísla zakázky
+        set projectNumber to ""
+        if pageText contains "Zakázka ?íslo:" then
+            set textItems to paragraphs of pageText
+            repeat with textItem in textItems
+                if textItem contains "Zakázka ?íslo:" then
+                    set projectNumber to text ((offset of "Zakázka ?íslo: " in textItem) + 14) thru -1 of textItem
+                    exit repeat
+                end if
+            end repeat
+        end if
+        
+        -- Extrakce názvu projektu (hledáme ?ádek s "Projekt:")
+        set projectName to ""
+        if pageText contains "Projekt:" then
+            set textItems to paragraphs of pageText
+            repeat with i from 1 to count of textItems
+                if (item i of textItems) contains "Projekt:" then
+                    if i < count of textItems then
+                        set projectName to item (i + 1) of textItems
+                        exit repeat
+                    end if
+                end if
+            end repeat
+        end if
+        
+        -- Extrakce klienta (hledáme "Klient:" a následující ?ádek)
+        set clientName to ""
+        if pageText contains "Klient:" then
+            set textItems to paragraphs of pageText
+            repeat with i from 1 to count of textItems
+                if (item i of textItems) contains "Klient:" then
+                    if i < count of textItems then
+                        set clientName to item (i + 1) of textItems
+                        exit repeat
+                    end if
+                end if
+            end repeat
+        end if
+        
+        -- Sestavení finálního názvu
+        set projectInfo to projectNumber & " - " & clientName & " - " & projectName
+        
+        -- Zobrazení extrahovan?ch dat pro kontrolu
+        display dialog "Extrahovaná data:" & return & return & projectInfo & return & return & "Pokra?ovat?" buttons {"Zru?it", "Ano"} default button "Ano"
+        if button returned of result is "Zru?it" then
+            return
+        end if
+        
+    on error errorMessage
+        display dialog "Chyba p?i ?tení dat ze Safari:" & return & errorMessage & return & return & "Zadejte údaje ru?n?:" default answer "" buttons {"Zru?it", "OK"} default button "OK"
+        if button returned of result is "Zru?it" then
+            return
+        end if
+        set projectInfo to text returned of result
+    end try
+end tell
 
--- Kontrola, zda bylo n?co zadáno
+-- Kontrola, zda bylo n?co získáno
 if projectInfo is "" then
-    display dialog "Nebyla zadána ?ádná data. Skript bude ukon?en." buttons {"OK"} default button "OK"
+    display dialog "Nebyla získána ?ádná data. Skript bude ukon?en." buttons {"OK"} default button "OK"
     return
 end if
 
