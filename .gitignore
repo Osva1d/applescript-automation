@@ -1,0 +1,14 @@
+# macOS soubory
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Dočasné soubory
+*.tmp
+*~
+*.swp
+*.lock
