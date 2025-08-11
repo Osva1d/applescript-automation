@@ -7,6 +7,15 @@ set currentYear to year of (current date)
 set currentYearStr to currentYear as string
 set lastTwoDigits to text -2 thru -1 of currentYearStr
 
+-- Získání aktuálního roku a posledních dvoj?íslí
+set currentYear to year of (current date)
+set currentYearStr to currentYear as string
+set lastTwoDigits to text -2 thru -1 of currentYearStr
+
+-- Pevné umíst?ní pro projektové slo?ky (upravte cestu podle va?ich pot?eb)
+set folderLocation to (path to desktop) -- M??ete zm?nit na: (path to documents folder), (path to home folder), nebo konkrétní cestu
+-- Pro konkrétní cestu pou?ijte: set folderLocation to "Macintosh HD:Users:Va?eJméno:Projekty:" as alias
+
 -- Funkce pro o?i?t?ní textu od bíl?ch znak? a nebezpe?n?ch znak?
 on cleanText(inputText)
     -- Odstran?ní bíl?ch znak? na za?átku a konci
@@ -45,8 +54,16 @@ on cleanText(inputText)
     
     set AppleScript's text item delimiters to ""
     
-    return cleanedText
 end cleanText
+
+-- Získání aktuálního roku a posledních dvoj?íslí
+set currentYear to year of (current date)
+set currentYearStr to currentYear as string
+set lastTwoDigits to text -2 thru -1 of currentYearStr
+
+-- Pevné umíst?ní pro projektové slo?ky (upravte cestu podle va?ich pot?eb)
+set folderLocation to (path to desktop) -- M??ete zm?nit na: (path to documents folder), (path to home folder), nebo konkrétní cestu
+-- Pro konkrétní cestu pou?ijte: set folderLocation to "Macintosh HD:Users:Va?eJméno:Projekty:" as alias
 
 -- Extrakce dat ze Safari
 tell application "Safari"
@@ -134,9 +151,9 @@ tell application "Safari"
         end if
         
         -- O?i?t?ní v?ech text?
-        set projectNumber to cleanText(projectNumber)
-        set clientName to cleanText(clientName)
-        set projectName to cleanText(projectName)
+        set projectNumber to my cleanText(projectNumber)
+        set clientName to my cleanText(clientName)
+        set projectName to my cleanText(projectName)
         
         -- Sestavení finálního názvu
         set projectInfo to projectNumber & " - " & clientName & " - " & projectName
