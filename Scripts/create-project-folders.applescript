@@ -29,8 +29,9 @@ end if
 
 set projectNumber to item 1 of projectParts
 
--- V?b?r umíst?ní pro hlavní slo?ku projektu
-set folderLocation to choose folder with prompt "Vyberte umíst?ní pro slo?ku projektu:"
+-- Pevné umíst?ní pro projektové slo?ky (upravte cestu podle va?ich pot?eb)
+set folderLocation to (path to desktop) -- M??ete zm?nit na: (path to documents folder), (path to home folder), nebo konkrétní cestu
+-- Pro konkrétní cestu pou?ijte: set folderLocation to "Macintosh HD:Users:Va?eJméno:Projekty:" as alias
 
 -- Vytvo?ení hlavní slo?ky projektu
 set mainFolderPath to (folderLocation as string) & projectInfo & ":"
