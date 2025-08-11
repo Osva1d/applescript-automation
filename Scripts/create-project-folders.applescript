@@ -233,11 +233,3 @@ end tell
 
 -- P?ipomenutí úkol?
 display dialog "Slo?ky projektu byly úsp??n? vytvo?eny!" & return & return & "Nezapome?te:" & return & "• Stisknout tla?ítko 'p?ijmout p?id?lení' v Safari" & return & "• Nakopírovat zdrojová data do slo?ky 'zdroje'" buttons {"OK"} default button "OK" with title "Hotovo!"
-
--- Otev?ení Safari pro p?ijmutí zakázky (volitelné)
-display dialog "Chcete otev?ít Safari pro p?ijmutí zakázky?" buttons {"Ne", "Ano"} default button "Ano"
-if button returned of result is "Ano" then
-    tell application "Safari"
-        activate
-    end tell
-end if
