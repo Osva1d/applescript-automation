@@ -49,7 +49,7 @@ set lastTwoDigits to text returned of result
 set bridgeHeader to my createBridgeHeader(clientName, technology, projectNumber, lastTwoDigits)
 
 -- Zobrazení výsledku
-display dialog "Testovací hlavička:" & return & return & bridgeHeader & return & return & "Délka: " & (length of bridgeHeader) & " znaků" & return & return & "Zkopírovat do schránky?" buttons {"Ne", "Ano"} default button "Ano"
+display dialog "Vygenerovaná hlavička:" & return & return & bridgeHeader & return & return & "Délka: " & (length of bridgeHeader) & " znaků (cíl: 50)" & return & return & "Zkopírovat do schránky?" buttons {"Ne", "Ano"} default button "Ano"
 
 if button returned of result is "Ano" then
     set the clipboard to bridgeHeader
@@ -58,10 +58,10 @@ end if
 
 -- Debug informace
 set debugInfo to "=== DEBUG INFO ===" & return
-set debugInfo to debugInfo & "Klient: '" & testClient & "' (" & (length of testClient) & " znaků)" & return
-set debugInfo to debugInfo & "Technologie: '" & testTechnology & "' (" & (length of testTechnology) & " znaků)" & return
-set debugInfo to debugInfo & "Číslo: '" & testLastTwoDigits & "_" & testProjectNumber & "' (" & (length of (testLastTwoDigits & "_" & testProjectNumber)) & " znaků)" & return
+set debugInfo to debugInfo & "Klient: '" & clientName & "' (" & (length of clientName) & " znaků)" & return
+set debugInfo to debugInfo & "Technologie: '" & technology & "' (" & (length of technology) & " znaků)" & return
+set debugInfo to debugInfo & "Číslo: '" & lastTwoDigits & "_" & projectNumber & "' (" & (length of (lastTwoDigits & "_" & projectNumber)) & " znaků)" & return
 set debugInfo to debugInfo & "Celková délka: " & (length of bridgeHeader) & " znaků" & return
-set debugInfo to debugInfo & "Cílová délka: 133 znaků"
+set debugInfo to debugInfo & "Cílová délka: 50 znaků"
 
 display dialog debugInfo buttons {"OK"} default button "OK"
