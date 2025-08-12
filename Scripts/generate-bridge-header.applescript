@@ -1,7 +1,7 @@
 -- Test skriptu pro vytvoření centrované hlavičky Bridge
 -- Funkce pro vytvoření centrované hlavičky
 on createBridgeHeader(clientName, technology, projectNumber, lastTwoDigits)
-    set totalWidth to 142  -- Opravená šířka podle skutečného příkladu
+    set totalWidth to 92  -- Správná šířka podle skutečného pole
     set rightText to lastTwoDigits & "_" & projectNumber
     
     -- Výpočet pozic
@@ -49,7 +49,7 @@ set lastTwoDigits to text returned of result
 set bridgeHeader to my createBridgeHeader(clientName, technology, projectNumber, lastTwoDigits)
 
 -- Zobrazení výsledku
-display dialog "Vygenerovaná hlavička:" & return & return & bridgeHeader & return & return & "Délka: " & (length of bridgeHeader) & " znaků (cíl: 142)" & return & return & "Zkopírovat do schránky?" buttons {"Ne", "Ano"} default button "Ano"
+display dialog "Vygenerovaná hlavička:" & return & return & bridgeHeader & return & return & "Délka: " & (length of bridgeHeader) & " znaků (cíl: 92)" & return & return & "Zkopírovat do schránky?" buttons {"Ne", "Ano"} default button "Ano"
 
 if button returned of result is "Ano" then
     set the clipboard to bridgeHeader
@@ -62,6 +62,6 @@ set debugInfo to debugInfo & "Klient: '" & clientName & "' (" & (length of clien
 set debugInfo to debugInfo & "Technologie: '" & technology & "' (" & (length of technology) & " znaků)" & return
 set debugInfo to debugInfo & "Číslo: '" & lastTwoDigits & "_" & projectNumber & "' (" & (length of (lastTwoDigits & "_" & projectNumber)) & " znaků)" & return
 set debugInfo to debugInfo & "Celková délka: " & (length of bridgeHeader) & " znaků" & return
-set debugInfo to debugInfo & "Cílová délka: 142 znaků"
+set debugInfo to debugInfo & "Cílová délka: 92 znaků"
 
 display dialog debugInfo buttons {"OK"} default button "OK"
