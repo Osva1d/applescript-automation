@@ -1,7 +1,34 @@
--- Test skriptu pro vytvoření centrované hlavičky Bridge
--- Funkce pro vytvoření centrované hlavičky
+-- Kompletní skript: Safari → Bridge hlavička
+-- Funkce pro očištění textu
+on cleanText(inputText)
+    set cleanedText to inputText
+    
+    -- Odstranění bílých znaků ze začátku
+    repeat while cleanedText starts with " " or cleanedText starts with tab or cleanedText starts with return
+        if length of cleanedText > 1 then
+            set cleanedText to text 2 thru -1 of cleanedText
+        else
+            set cleanedText to ""
+            exit repeat
+        end if
+    end repeat
+    
+    -- Odstranění bílých znaků z konce
+    repeat while cleanedText ends with " " or cleanedText ends with tab or cleanedText ends with return
+        if length of cleanedText > 1 then
+            set cleanedText to text 1 thru -2 of cleanedText
+        else
+            set cleanedText to ""
+            exit repeat
+        end if
+    end repeat
+    
+    return cleanedText
+end cleanText
+
+-- Funkce pro vytvoření centrované hlavičky Bridge
 on createBridgeHeader(clientName, technology, projectNumber, lastTwoDigits)
-    set totalWidth to 79  -- Správná šířka pro Courier font
+    set totalWidth to 79  -- Courier font šířka
     set rightText to lastTwoDigits & "_" & projectNumber
     
     -- Výpočet pozic
@@ -32,36 +59,125 @@ on createBridgeHeader(clientName, technology, projectNumber, lastTwoDigits)
     return clientName & leftPadding & technology & rightPadding & rightText
 end createBridgeHeader
 
--- Dialogové okno pro zadání živých dat
-display dialog "Zadejte název klienta:" default answer "" with title "Bridge Header Generator"
-set clientName to text returned of result
+-- Získání aktuálního roku
+set currentYear to year of (current date)
+set lastTwoDigits to text -2 thru -1 of (currentYear as string)
 
-display dialog "Zadejte technologii:" default answer "" with title "Bridge Header Generator"
-set technology to text returned of result
-
-display dialog "Zadejte číslo projektu:" default answer "" with title "Bridge Header Generator"
-set projectNumber to text returned of result
-
-display dialog "Zadejte rok (2 číslice):" default answer "25" with title "Bridge Header Generator"
-set lastTwoDigits to text returned of result
-
--- Vytvoření hlavičky s živými daty
-set bridgeHeader to my createBridgeHeader(clientName, technology, projectNumber, lastTwoDigits)
-
--- Zobrazení výsledku
-display dialog "Vygenerovaná hlavička:" & return & return & bridgeHeader & return & return & "Délka: " & (length of bridgeHeader) & " znaků (cíl: 79)" & return & return & "Zkopírovat do schránky?" buttons {"Ne", "Ano"} default button "Ano"
-
-if button returned of result is "Ano" then
-    set the clipboard to bridgeHeader
-    display dialog "Hlavička byla zkopírována do schránky!" & return & return & "Můžete ji vložit do Adobe Bridge pomocí Cmd+V" & return & return & "DŮLEŽITÉ: Ujistěte se, že máte nastavený font Courier!" buttons {"OK"} default button "OK"
-end if
-
--- Debug informace
-set debugInfo to "=== DEBUG INFO ===" & return
-set debugInfo to debugInfo & "Klient: '" & clientName & "' (" & (length of clientName) & " znaků)" & return
-set debugInfo to debugInfo & "Technologie: '" & technology & "' (" & (length of technology) & " znaků)" & return
-set debugInfo to debugInfo & "Číslo: '" & lastTwoDigits & "_" & projectNumber & "' (" & (length of (lastTwoDigits & "_" & projectNumber)) & " znaků)" & return
-set debugInfo to debugInfo & "Celková délka: " & (length of bridgeHeader) & " znaků" & return
-set debugInfo to debugInfo & "Cílová délka: 79 znaků (Courier font)"
-
-display dialog debugInfo buttons {"OK"} default button "OK"
+-- Extrakce dat ze Safari
+tell application "Safari"
+    if not (exists front document) then
+        display dialog "Nejdříve otevřete zakázkový list v Safari!" buttons {"OK"} default button "OK"
+        return
+    end if
+    
+    try
+        -- Extrakce dat pomocí JavaScript a CSS selektorů
+        set extractedData to do JavaScript "
+            var result = {};
+            
+            // Extrakce čísla zakázky
+            var zakazkaSpan = document.querySelector('span.Header1');
+            if (zakazkaSpan) {
+                var text = zakazkaSpan.textContent;
+                var match = text.match(/Zakázka číslo:\\s*(\\d+\\.\\d+)/);
+                if (match) {
+                    result.projectNumber = match[1].replace('.', '');
+                }
+            }
+            
+            // Extrakce projektu, klienta a technologie
+            var allTabColHeads = document.querySelectorAll('td.TabColHead');
+            for (var i = 0; i < allTabColHeads.length; i++) {
+                var headText = allTabColHeads[i].textContent.trim();
+                var nextTd = allTabColHeads[i].nextElementSibling;
+                
+                if (nextTd && nextTd.classList.contains('TabValue')) {
+                    if (headText === 'Projekt:') {
+                        result.projectName = nextTd.textContent.trim();
+                    } else if (headText === 'Klient:') {
+                        result.clientName = nextTd.textContent.trim();
+                    } else if (headText === 'Technologie:') {
+                        result.technology = nextTd.textContent.trim();
+                    }
+                }
+            }
+            
+            JSON.stringify(result);
+        " in front document
+        
+        -- Parsování JSON dat
+        set projectNumber to ""
+        set projectName to ""
+        set clientName to ""
+        set technology to ""
+        
+        -- Extrakce čísla projektu
+        if extractedData contains "\"projectNumber\":\"" then
+            set startPos to offset of "\"projectNumber\":\"" in extractedData
+            set tempString to text (startPos + 17) thru -1 of extractedData
+            set endPos to offset of "\"" in tempString
+            if endPos > 0 then
+                set projectNumber to text 1 thru (endPos - 1) of tempString
+            end if
+        end if
+        
+        -- Extrakce názvu projektu
+        if extractedData contains "\"projectName\":\"" then
+            set startPos to offset of "\"projectName\":\"" in extractedData
+            set tempString to text (startPos + 15) thru -1 of extractedData
+            set endPos to offset of "\"" in tempString
+            if endPos > 0 then
+                set projectName to text 1 thru (endPos - 1) of tempString
+            end if
+        end if
+        
+        -- Extrakce klienta
+        if extractedData contains "\"clientName\":\"" then
+            set startPos to offset of "\"clientName\":\"" in extractedData
+            set tempString to text (startPos + 14) thru -1 of extractedData
+            set endPos to offset of "\"" in tempString
+            if endPos > 0 then
+                set clientName to text 1 thru (endPos - 1) of tempString
+            end if
+        end if
+        
+        -- Extrakce technologie
+        if extractedData contains "\"technology\":\"" then
+            set startPos to offset of "\"technology\":\"" in extractedData
+            set tempString to text (startPos + 14) thru -1 of extractedData
+            set endPos to offset of "\"" in tempString
+            if endPos > 0 then
+                set technology to text 1 thru (endPos - 1) of tempString
+            end if
+        end if
+        
+        -- Očištění textů
+        set projectNumber to my cleanText(projectNumber)
+        set clientName to my cleanText(clientName)
+        set projectName to my cleanText(projectName)
+        set technology to my cleanText(technology)
+        
+        -- Zobrazení extrahovaných dat
+        if projectNumber is not "" and clientName is not "" and technology is not "" then
+            display dialog "Extrahovaná data ze Safari:" & return & return & "Číslo: " & projectNumber & return & "Klient: " & clientName & return & "Projekt: " & projectName & return & "Technologie: " & technology & return & return & "Vytvořit Bridge hlavičku?" buttons {"Zrušit", "Ano"} default button "Ano"
+            
+            if button returned of result is "Ano" then
+                -- Vytvoření Bridge hlavičky
+                set bridgeHeader to my createBridgeHeader(clientName, technology, projectNumber, lastTwoDigits)
+                
+                -- Zobrazení výsledku
+                display dialog "Bridge hlavička:" & return & return & bridgeHeader & return & return & "Délka: " & (length of bridgeHeader) & " znaků (cíl: 79)" & return & return & "Zkopírovat do schránky?" buttons {"Ne", "Ano"} default button "Ano"
+                
+                if button returned of result is "Ano" then
+                    set the clipboard to bridgeHeader
+                    display dialog "Hlavička byla zkopírována do schránky!" & return & return & "Vložte ji do Adobe Bridge pomocí Cmd+V" & return & return & "DŮLEŽITÉ: Ujistěte se, že máte nastavený font Courier!" buttons {"OK"} default button "OK"
+                end if
+            end if
+        else
+            display dialog "Nepodařilo se extrahovat všechna data:" & return & return & "Číslo: '" & projectNumber & "'" & return & "Klient: '" & clientName & "'" & return & "Technologie: '" & technology & "'" buttons {"OK"} default button "OK"
+        end if
+        
+    on error errorMessage
+        display dialog "Chyba při čtení dat ze Safari:" & return & errorMessage buttons {"OK"} default button "OK"
+    end try
+end tell
