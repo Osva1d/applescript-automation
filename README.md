@@ -1,4 +1,4 @@
-# AppleScript Automatizace pro Tiskovou Produkci
+# AppleScript automatizace pro tiskovou produkci
 
 Automatizace workflow pro tiskové studio - vytváření projektových složek a generování Adobe Bridge hlaviček.
 
