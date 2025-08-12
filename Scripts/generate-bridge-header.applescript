@@ -1,9 +1,9 @@
--- Kompletní skript: Safari → Bridge hlavička
--- Funkce pro očištění textu
+-- Kompletn√≠ skript: Safari ‚Üí Bridge hlaviƒçka
+-- Funkce pro oƒçi≈°tƒõn√≠ textu
 on cleanText(inputText)
     set cleanedText to inputText
     
-    -- Odstranění bílých znaků ze začátku
+    -- Odstranƒõn√≠ b√≠l√Ωch znak≈Ø ze zaƒç√°tku
     repeat while cleanedText starts with " " or cleanedText starts with tab or cleanedText starts with return
         if length of cleanedText > 1 then
             set cleanedText to text 2 thru -1 of cleanedText
@@ -13,7 +13,7 @@ on cleanText(inputText)
         end if
     end repeat
     
-    -- Odstranění bílých znaků z konce
+    -- Odstranƒõn√≠ b√≠l√Ωch znak≈Ø z konce
     repeat while cleanedText ends with " " or cleanedText ends with tab or cleanedText ends with return
         if length of cleanedText > 1 then
             set cleanedText to text 1 thru -2 of cleanedText
@@ -23,7 +23,7 @@ on cleanText(inputText)
         end if
     end repeat
     
-    -- Odstranění interpunkce na konci (čárky, tečky, středníky)
+    -- Odstranƒõn√≠ interpunkce na konci (ƒç√°rky, teƒçky, st≈ôedn√≠ky)
     repeat while cleanedText ends with "," or cleanedText ends with "." or cleanedText ends with ";" or cleanedText ends with ":"
         if length of cleanedText > 1 then
             set cleanedText to text 1 thru -2 of cleanedText
@@ -33,7 +33,7 @@ on cleanText(inputText)
         end if
     end repeat
     
-    -- Odstranění bílých znaků z konce (znovu, po odstranění interpunkce)
+    -- Odstranƒõn√≠ b√≠l√Ωch znak≈Ø z konce (znovu, po odstranƒõn√≠ interpunkce)
     repeat while cleanedText ends with " " or cleanedText ends with tab or cleanedText ends with return
         if length of cleanedText > 1 then
             set cleanedText to text 1 thru -2 of cleanedText
@@ -46,14 +46,14 @@ on cleanText(inputText)
     return cleanedText
 end cleanText
 
--- Funkce pro zkrácení a očištění názvu klienta
+-- Funkce pro zkr√°cen√≠ a oƒçi≈°tƒõn√≠ n√°zvu klienta
 on cleanClientName(clientName, maxLength)
     set cleanedName to my cleanText(clientName)
     
-    -- Seznam právních forem k odstranění (nyní s více variantami)
+    -- Seznam pr√°vn√≠ch forem k odstranƒõn√≠ (nyn√≠ s v√≠ce variantami)
     set legalForms to {", a.s.", ", s.r.o.", ", spol. s r.o.", ", v.o.s.", ", k.s.", ", s.p.", ", z.s.", " a.s.", " s.r.o.", " spol. s r.o.", " v.o.s.", " k.s.", " s.p.", " z.s.", " a. s.", " s. r. o.", " spol. s r. o.", " v. o. s.", " k. s.", " s. p.", " z. s.", " Ltd.", " Inc.", " LLC", " GmbH", " AG", " SE", " SAS", " SARL", ",a.s.", ",s.r.o.", ",spol. s r.o.", ",v.o.s.", ",k.s.", ",s.p.", ",z.s.", ",a. s.", ",s. r. o.", ",spol. s r. o.", ",v. o. s.", ",k. s.", ",s. p.", ",z. s.", ", a.s", ", s.r.o", ", spol. s r.o", ", v.o.s", ", k.s", ", s.p", ", z.s", " a.s", " s.r.o", " spol. s r.o", " v.o.s", " k.s", " s.p", " z.s", " a. s", " s. r. o", " spol. s r. o", " v. o. s", " k. s", " s. p", " z. s", ",a.s", ",s.r.o", ",spol. s r.o", ",v.o.s", ",k.s", ",s.p", ",z.s", ",a. s", ",s. r. o", ",spol. s r. o", ",v. o. s", ",k. s", ",s. p", ",z. s"}
     
-    -- Odstranění právních forem
+    -- Odstranƒõn√≠ pr√°vn√≠ch forem
     repeat with legalForm in legalForms
         if cleanedName ends with legalForm then
             set cleanedName to text 1 thru ((length of cleanedName) - (length of legalForm)) of cleanedName
@@ -61,13 +61,13 @@ on cleanClientName(clientName, maxLength)
         end if
     end repeat
     
-    -- Další čištění na konci
+    -- Dal≈°√≠ ƒçi≈°tƒõn√≠ na konci
     set cleanedName to my cleanText(cleanedName)
     
-    -- Zkrácení, pokud je příliš dlouhé
+    -- Zkr√°cen√≠, pokud je p≈ô√≠li≈° dlouh√©
     if length of cleanedName > maxLength then
         set cleanedName to text 1 thru maxLength of cleanedName
-        -- Oříznutí na posledním celém slově
+        -- O≈ô√≠znut√≠ na posledn√≠m cel√©m slovƒõ
         set lastSpacePos to 0
         repeat with i from maxLength to 1 by -1
             if character i of cleanedName is " " then
@@ -83,26 +83,26 @@ on cleanClientName(clientName, maxLength)
     return cleanedName
 end cleanClientName
 
--- Funkce pro vytvoření centrované hlavičky Bridge
+-- Funkce pro vytvo≈ôen√≠ centrovan√© hlaviƒçky Bridge
 on createBridgeHeader(clientName, technology, projectNumber, lastTwoDigits)
-    set totalWidth to 85  -- Menlo font šířka
+    set totalWidth to 85  -- Menlo font ≈°√≠≈ôka
     set rightText to lastTwoDigits & "_" & projectNumber
     
-    -- Výpočet pozic
+    -- V√Ωpoƒçet pozic
     set leftLength to length of clientName
     set centerLength to length of technology
     set rightLength to length of rightText
     
-    -- Pozice pro centrování technologie
+    -- Pozice pro centrov√°n√≠ technologie
     set centerPosition to (totalWidth - centerLength) / 2
     set leftSpaces to centerPosition - leftLength
     set rightSpaces to totalWidth - leftLength - leftSpaces - centerLength - rightLength
     
-    -- Zajistíme, že počet mezer není záporný
+    -- Zajist√≠me, ≈æe poƒçet mezer nen√≠ z√°porn√Ω
     if leftSpaces < 1 then set leftSpaces to 1
     if rightSpaces < 1 then set rightSpaces to 1
     
-    -- Vytvoření mezer
+    -- Vytvo≈ôen√≠ mezer
     set leftPadding to ""
     repeat leftSpaces times
         set leftPadding to leftPadding & " "
@@ -116,28 +116,28 @@ on createBridgeHeader(clientName, technology, projectNumber, lastTwoDigits)
     return clientName & leftPadding & technology & rightPadding & rightText
 end createBridgeHeader
 
--- Získání aktuálního roku
+-- Z√≠sk√°n√≠ aktu√°ln√≠ho roku
 set currentYear to year of (current date)
 set lastTwoDigits to text -2 thru -1 of (currentYear as string)
 
 -- Extrakce dat ze Safari
 tell application "Safari"
     if not (exists front document) then
-        activate  -- Přenese focus na AppleScript dialog
-        display dialog "Nejdříve otevřete zakázkový list v Safari!" buttons {"OK"} default button "OK"
+        activate  -- P≈ôenese focus na AppleScript dialog
+        display dialog "Nejd≈ô√≠ve otev≈ôete zak√°zkov√Ω list v Safari!" buttons {"OK"} default button "OK"
         return
     end if
     
     try
-        -- Extrakce dat pomocí JavaScript a CSS selektorů
+        -- Extrakce dat pomoc√≠ JavaScript a CSS selektor≈Ø
         set extractedData to do JavaScript "
             var result = {};
             
-            // Extrakce čísla zakázky
+            // Extrakce ƒç√≠sla zak√°zky
             var zakazkaSpan = document.querySelector('span.Header1');
             if (zakazkaSpan) {
                 var text = zakazkaSpan.textContent;
-                var match = text.match(/Zakázka číslo:\\s*(\\d+\\.\\d+)/);
+                var match = text.match(/Zak√°zka ƒç√≠slo:\\s*(\\d+\\.\\d+)/);
                 if (match) {
                     result.projectNumber = match[1].replace('.', '');
                 }
@@ -161,12 +161,12 @@ tell application "Safari"
             JSON.stringify(result);
         " in front document
         
-        -- Parsování JSON dat
+        -- Parsov√°n√≠ JSON dat
         set projectNumber to ""
         set clientName to ""
         set technology to ""
         
-        -- Extrakce čísla projektu
+        -- Extrakce ƒç√≠sla projektu
         if extractedData contains "\"projectNumber\":\"" then
             set startPos to offset of "\"projectNumber\":\"" in extractedData
             set tempString to text (startPos + 17) thru -1 of extractedData
@@ -196,29 +196,29 @@ tell application "Safari"
             end if
         end if
         
-        -- Očištění textů
+        -- Oƒçi≈°tƒõn√≠ text≈Ø
         set projectNumber to my cleanText(projectNumber)
         set technology to my cleanText(technology)
         
-        -- Zpracování názvu klienta - očištění a zkrácení
+        -- Zpracov√°n√≠ n√°zvu klienta - oƒçi≈°tƒõn√≠ a zkr√°cen√≠
         set maxClientLength to 25
         set clientName to my cleanClientName(clientName, maxClientLength)
         
-        -- Zobrazení extrahovaných dat a zpracování
+        -- Zobrazen√≠ extrahovan√Ωch dat a zpracov√°n√≠
         if projectNumber is not "" and clientName is not "" and technology is not "" then
-            activate  -- Přenese focus na AppleScript dialog
-            display dialog "Extrahovaná data ze Safari:" & return & return & "Číslo: " & projectNumber & return & "Klient: " & clientName & return & "Technologie: " & technology & return & return & "Hlavička zkopírována do schránky!" buttons {"OK"} default button "OK"
+            activate  -- P≈ôenese focus na AppleScript dialog
+            display dialog "Extrahovan√° data ze Safari:" & return & return & "ƒå√≠slo: " & projectNumber & return & "Klient: " & clientName & return & "Technologie: " & technology & return & return & "Hlaviƒçka zkop√≠rov√°na do schr√°nky!" buttons {"OK"} default button "OK"
             
-            -- Automatické vytvoření a kopírování Bridge hlavičky
+            -- Automatick√© vytvo≈ôen√≠ a kop√≠rov√°n√≠ Bridge hlaviƒçky
             set bridgeHeader to my createBridgeHeader(clientName, technology, projectNumber, lastTwoDigits)
             set the clipboard to bridgeHeader
         else
-            activate  -- Přenese focus na AppleScript dialog
-            display dialog "Nepodařilo se extrahovat všechna data:" & return & return & "Číslo: '" & projectNumber & "'" & return & "Klient: '" & clientName & "'" & return & "Technologie: '" & technology & "'" buttons {"OK"} default button "OK"
+            activate  -- P≈ôenese focus na AppleScript dialog
+            display dialog "Nepoda≈ôilo se extrahovat v≈°echna data:" & return & return & "ƒå√≠slo: '" & projectNumber & "'" & return & "Klient: '" & clientName & "'" & return & "Technologie: '" & technology & "'" buttons {"OK"} default button "OK"
         end if
         
     on error errorMessage
-        activate  -- Přenese focus na AppleScript dialog
-        display dialog "Chyba při čtení dat ze Safari:" & return & errorMessage buttons {"OK"} default button "OK"
+        activate  -- P≈ôenese focus na AppleScript dialog
+        display dialog "Chyba p≈ôi ƒçten√≠ dat ze Safari:" & return & errorMessage buttons {"OK"} default button "OK"
     end try
 end tell
