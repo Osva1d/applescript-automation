@@ -1,4 +1,31 @@
 -- Kompletní skript: Safari → Bridge hlavička
+-- Funkce pro očištění textu
+on cleanText(inputText)
+    set cleanedText to inputText
+    
+    -- Odstranění bílých znaků ze začátku
+    repeat while cleanedText starts with " " or cleanedText starts with tab or cleanedText starts with return
+        if length of cleanedText > 1 then
+            set cleanedText to text 2 thru -1 of cleanedText
+        else
+            set cleanedText to ""
+            exit repeat
+        end if
+    end repeat
+    
+    -- Odstranění bílých znaků z konce
+    repeat while cleanedText ends with " " or cleanedText ends with tab or cleanedText ends with return
+        if length of cleanedText > 1 then
+            set cleanedText to text 1 thru -2 of cleanedText
+        else
+            set cleanedText to ""
+            exit repeat
+        end if
+    end repeat
+    
+    return cleanedText
+end cleanText
+
 -- Funkce pro zkrácení a očištění názvu klienta
 on cleanClientName(clientName, maxLength)
     set cleanedName to my cleanText(clientName)
@@ -35,33 +62,8 @@ on cleanClientName(clientName, maxLength)
     
     return cleanedName
 end cleanClientName
-    set cleanedText to inputText
-    
-    -- Odstranění bílých znaků ze začátku
-    repeat while cleanedText starts with " " or cleanedText starts with tab or cleanedText starts with return
-        if length of cleanedText > 1 then
-            set cleanedText to text 2 thru -1 of cleanedText
-        else
-            set cleanedText to ""
-            exit repeat
-        end if
-    end repeat
-    
-    -- Odstranění bílých znaků z konce
-    repeat while cleanedText ends with " " or cleanedText ends with tab or cleanedText ends with return
-        if length of cleanedText > 1 then
-            set cleanedText to text 1 thru -2 of cleanedText
-        else
-            set cleanedText to ""
-            exit repeat
-        end if
-    end repeat
-    
-    return cleanedText
-end cleanText
 
--- Funkce pro očištění textu
-on cleanText(inputText)
+-- Funkce pro vytvoření centrované hlavičky Bridge
 on createBridgeHeader(clientName, technology, projectNumber, lastTwoDigits)
     set totalWidth to 85  -- Menlo font šířka
     set rightText to lastTwoDigits & "_" & projectNumber
