@@ -129,9 +129,7 @@ tell application "Safari"
                 var nextTd = allTabColHeads[i].nextElementSibling;
                 
                 if (nextTd && nextTd.classList.contains('TabValue')) {
-                    if (headText === 'Projekt:') {
-                        result.projectName = nextTd.textContent.trim();
-                    } else if (headText === 'Klient:') {
+                    if (headText === 'Klient:') {
                         result.clientName = nextTd.textContent.trim();
                     } else if (headText === 'Technologie:') {
                         result.technology = nextTd.textContent.trim();
@@ -144,7 +142,6 @@ tell application "Safari"
         
         -- Parsování JSON dat
         set projectNumber to ""
-        set projectName to ""
         set clientName to ""
         set technology to ""
         
@@ -155,16 +152,6 @@ tell application "Safari"
             set endPos to offset of "\"" in tempString
             if endPos > 0 then
                 set projectNumber to text 1 thru (endPos - 1) of tempString
-            end if
-        end if
-        
-        -- Extrakce názvu projektu
-        if extractedData contains "\"projectName\":\"" then
-            set startPos to offset of "\"projectName\":\"" in extractedData
-            set tempString to text (startPos + 15) thru -1 of extractedData
-            set endPos to offset of "\"" in tempString
-            if endPos > 0 then
-                set projectName to text 1 thru (endPos - 1) of tempString
             end if
         end if
         
@@ -190,29 +177,19 @@ tell application "Safari"
         
         -- Očištění textů
         set projectNumber to my cleanText(projectNumber)
-        set projectName to my cleanText(projectName)
         set technology to my cleanText(technology)
         
         -- Zpracování názvu klienta - očištění a zkrácení
-        set maxClientLength to 25  -- Maximální délka názvu klienta
+        set maxClientLength to 25
         set clientName to my cleanClientName(clientName, maxClientLength)
         
-        -- Zobrazení extrahovaných dat
+        -- Zobrazení extrahovaných dat a zpracování
         if projectNumber is not "" and clientName is not "" and technology is not "" then
-            display dialog "Extrahovaná data ze Safari:" & return & return & "Číslo: " & projectNumber & return & "Klient: " & clientName & return & "Projekt: " & projectName & return & "Technologie: " & technology & return & return & "Vytvořit Bridge hlavičku?" buttons {"Zrušit", "Ano"} default button "Ano"
+            display dialog "Extrahovaná data ze Safari:" & return & return & "Číslo: " & projectNumber & return & "Klient: " & clientName & return & "Technologie: " & technology & return & return & "Hlavička zkopírována do schránky!" buttons {"OK"} default button "OK"
             
-            if button returned of result is "Ano" then
-                -- Vytvoření Bridge hlavičky
-                set bridgeHeader to my createBridgeHeader(clientName, technology, projectNumber, lastTwoDigits)
-                
-                -- Zobrazení výsledku
-                display dialog "Bridge hlavička:" & return & return & bridgeHeader & return & return & "Délka: " & (length of bridgeHeader) & " znaků (cíl: 85)" & return & return & "Zkopírovat do schránky?" buttons {"Ne", "Ano"} default button "Ano"
-                
-                if button returned of result is "Ano" then
-                    set the clipboard to bridgeHeader
-                    display dialog "Hlavička byla zkopírována do schránky!" & return & return & "Vložte ji do Adobe Bridge pomocí Cmd+V" & return & return & "DŮLEŽITÉ: Ujistěte se, že máte nastavený font Menlo!" buttons {"OK"} default button "OK"
-                end if
-            end if
+            -- Automatické vytvoření a kopírování Bridge hlavičky
+            set bridgeHeader to my createBridgeHeader(clientName, technology, projectNumber, lastTwoDigits)
+            set the clipboard to bridgeHeader
         else
             display dialog "Nepodařilo se extrahovat všechna data:" & return & return & "Číslo: '" & projectNumber & "'" & return & "Klient: '" & clientName & "'" & return & "Technologie: '" & technology & "'" buttons {"OK"} default button "OK"
         end if
