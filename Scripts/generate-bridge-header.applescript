@@ -103,6 +103,7 @@ set lastTwoDigits to text -2 thru -1 of (currentYear as string)
 -- Extrakce dat ze Safari
 tell application "Safari"
     if not (exists front document) then
+        activate  -- Přenese focus na AppleScript dialog
         display dialog "Nejdříve otevřete zakázkový list v Safari!" buttons {"OK"} default button "OK"
         return
     end if
@@ -185,16 +186,19 @@ tell application "Safari"
         
         -- Zobrazení extrahovaných dat a zpracování
         if projectNumber is not "" and clientName is not "" and technology is not "" then
+            activate  -- Přenese focus na AppleScript dialog
             display dialog "Extrahovaná data ze Safari:" & return & return & "Číslo: " & projectNumber & return & "Klient: " & clientName & return & "Technologie: " & technology & return & return & "Hlavička zkopírována do schránky!" buttons {"OK"} default button "OK"
             
             -- Automatické vytvoření a kopírování Bridge hlavičky
             set bridgeHeader to my createBridgeHeader(clientName, technology, projectNumber, lastTwoDigits)
             set the clipboard to bridgeHeader
         else
+            activate  -- Přenese focus na AppleScript dialog
             display dialog "Nepodařilo se extrahovat všechna data:" & return & return & "Číslo: '" & projectNumber & "'" & return & "Klient: '" & clientName & "'" & return & "Technologie: '" & technology & "'" buttons {"OK"} default button "OK"
         end if
         
     on error errorMessage
+        activate  -- Přenese focus na AppleScript dialog
         display dialog "Chyba při čtení dat ze Safari:" & return & errorMessage buttons {"OK"} default button "OK"
     end try
 end tell
