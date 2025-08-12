@@ -23,6 +23,26 @@ on cleanText(inputText)
         end if
     end repeat
     
+    -- Odstranění interpunkce na konci (čárky, tečky, středníky)
+    repeat while cleanedText ends with "," or cleanedText ends with "." or cleanedText ends with ";" or cleanedText ends with ":"
+        if length of cleanedText > 1 then
+            set cleanedText to text 1 thru -2 of cleanedText
+        else
+            set cleanedText to ""
+            exit repeat
+        end if
+    end repeat
+    
+    -- Odstranění bílých znaků z konce (znovu, po odstranění interpunkce)
+    repeat while cleanedText ends with " " or cleanedText ends with tab or cleanedText ends with return
+        if length of cleanedText > 1 then
+            set cleanedText to text 1 thru -2 of cleanedText
+        else
+            set cleanedText to ""
+            exit repeat
+        end if
+    end repeat
+    
     return cleanedText
 end cleanText
 
@@ -31,7 +51,7 @@ on cleanClientName(clientName, maxLength)
     set cleanedName to my cleanText(clientName)
     
     -- Seznam právních forem k odstranění (nyní s více variantami)
-    set legalForms to {", a.s.", ", s.r.o.", ", spol. s r.o.", ", v.o.s.", ", k.s.", ", s.p.", " a.s.", " s.r.o.", " spol. s r.o.", " v.o.s.", " k.s.", " s.p.", " a. s.", " s. r. o.", " spol. s r. o.", " v. o. s.", " k. s.", " s. p.", " Ltd.", " Inc.", " LLC", " GmbH", " AG", " SE", " SAS", " SARL", ",a.s.", ",s.r.o.", ",spol. s r.o.", ",v.o.s.", ",k.s.", ",s.p.", ",a. s.", ",s. r. o.", ",spol. s r. o.", ",v. o. s.", ",k. s.", ",s. p."}
+    set legalForms to {", a.s.", ", s.r.o.", ", spol. s r.o.", ", v.o.s.", ", k.s.", ", s.p.", " a.s.", " s.r.o.", " spol. s r.o.", " v.o.s.", " k.s.", " s.p.", " a. s.", " s. r. o.", " spol. s r. o.", " v. o. s.", " k. s.", " s. p.", " Ltd.", " Inc.", " LLC", " GmbH", " AG", " SE", " SAS", " SARL", ",a.s.", ",s.r.o.", ",spol. s r.o.", ",v.o.s.", ",k.s.", ",s.p.", ",a. s.", ",s. r. o.", ",spol. s r. o.", ",v. o. s.", ",k. s.", ",s. p.", ", a.s", ", s.r.o", ", spol. s r.o", ", v.o.s", ", k.s", ", s.p", " a.s", " s.r.o", " spol. s r.o", " v.o.s", " k.s", " s.p", " a. s", " s. r. o", " spol. s r. o", " v. o. s", " k. s", " s. p", ",a.s", ",s.r.o", ",spol. s r.o", ",v.o.s", ",k.s", ",s.p", ",a. s", ",s. r. o", ",spol. s r. o", ",v. o. s", ",k. s", ",s. p"}
     
     -- Odstranění právních forem
     repeat with legalForm in legalForms
