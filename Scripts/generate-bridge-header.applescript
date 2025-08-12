@@ -1,7 +1,7 @@
 -- Test skriptu pro vytvoření centrované hlavičky Bridge
 -- Funkce pro vytvoření centrované hlavičky
 on createBridgeHeader(clientName, technology, projectNumber, lastTwoDigits)
-    set totalWidth to 133
+    set totalWidth to 50  -- Opravená šířka podle mono fontu
     set rightText to lastTwoDigits & "_" & projectNumber
     
     -- Výpočet pozic
@@ -32,14 +32,21 @@ on createBridgeHeader(clientName, technology, projectNumber, lastTwoDigits)
     return clientName & leftPadding & technology & rightPadding & rightText
 end createBridgeHeader
 
--- Testovací data
-set testClient to "CrossCafe original"
-set testTechnology to "ARIZONA"
-set testProjectNumber to "7511"
-set testLastTwoDigits to "25"
+-- Dialogové okno pro zadání živých dat
+display dialog "Zadejte název klienta:" default answer "" with title "Bridge Header Generator"
+set clientName to text returned of result
 
--- Vytvoření hlavičky
-set bridgeHeader to my createBridgeHeader(testClient, testTechnology, testProjectNumber, testLastTwoDigits)
+display dialog "Zadejte technologii:" default answer "" with title "Bridge Header Generator"
+set technology to text returned of result
+
+display dialog "Zadejte číslo projektu:" default answer "" with title "Bridge Header Generator"
+set projectNumber to text returned of result
+
+display dialog "Zadejte rok (2 číslice):" default answer "25" with title "Bridge Header Generator"
+set lastTwoDigits to text returned of result
+
+-- Vytvoření hlavičky s živými daty
+set bridgeHeader to my createBridgeHeader(clientName, technology, projectNumber, lastTwoDigits)
 
 -- Zobrazení výsledku
 display dialog "Testovací hlavička:" & return & return & bridgeHeader & return & return & "Délka: " & (length of bridgeHeader) & " znaků" & return & return & "Zkopírovat do schránky?" buttons {"Ne", "Ano"} default button "Ano"
