@@ -28,7 +28,7 @@ end cleanText
 
 -- Funkce pro vytvoření centrované hlavičky Bridge
 on createBridgeHeader(clientName, technology, projectNumber, lastTwoDigits)
-    set totalWidth to 79  -- Courier font šířka
+    set totalWidth to 85  -- Menlo font šířka
     set rightText to lastTwoDigits & "_" & projectNumber
     
     -- Výpočet pozic
@@ -166,11 +166,11 @@ tell application "Safari"
                 set bridgeHeader to my createBridgeHeader(clientName, technology, projectNumber, lastTwoDigits)
                 
                 -- Zobrazení výsledku
-                display dialog "Bridge hlavička:" & return & return & bridgeHeader & return & return & "Délka: " & (length of bridgeHeader) & " znaků (cíl: 79)" & return & return & "Zkopírovat do schránky?" buttons {"Ne", "Ano"} default button "Ano"
+                display dialog "Bridge hlavička:" & return & return & bridgeHeader & return & return & "Délka: " & (length of bridgeHeader) & " znaků (cíl: 85)" & return & return & "Zkopírovat do schránky?" buttons {"Ne", "Ano"} default button "Ano"
                 
                 if button returned of result is "Ano" then
                     set the clipboard to bridgeHeader
-                    display dialog "Hlavička byla zkopírována do schránky!" & return & return & "Vložte ji do Adobe Bridge pomocí Cmd+V" & return & return & "DŮLEŽITÉ: Ujistěte se, že máte nastavený font Courier!" buttons {"OK"} default button "OK"
+                    display dialog "Hlavička byla zkopírována do schránky!" & return & return & "Vložte ji do Adobe Bridge pomocí Cmd+V" & return & return & "DŮLEŽITÉ: Ujistěte se, že máte nastavený font Menlo!" buttons {"OK"} default button "OK"
                 end if
             end if
         else
