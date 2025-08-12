@@ -30,8 +30,8 @@ end cleanText
 on cleanClientName(clientName, maxLength)
     set cleanedName to my cleanText(clientName)
     
-    -- Seznam právních forem k odstranění
-    set legalForms to {", a.s.", ", s.r.o.", ", spol. s r.o.", ", v.o.s.", ", k.s.", ", s.p.", " a.s.", " s.r.o.", " spol. s r.o.", " v.o.s.", " k.s.", " s.p.", " a. s.", " s. r. o.", " spol. s r. o.", " v. o. s.", " k. s.", " s. p.", " Ltd.", " Inc.", " LLC", " GmbH", " AG", " SE", " SAS", " SARL"}
+    -- Seznam právních forem k odstranění (nyní s více variantami)
+    set legalForms to {", a.s.", ", s.r.o.", ", spol. s r.o.", ", v.o.s.", ", k.s.", ", s.p.", " a.s.", " s.r.o.", " spol. s r.o.", " v.o.s.", " k.s.", " s.p.", " a. s.", " s. r. o.", " spol. s r. o.", " v. o. s.", " k. s.", " s. p.", " Ltd.", " Inc.", " LLC", " GmbH", " AG", " SE", " SAS", " SARL", ",a.s.", ",s.r.o.", ",spol. s r.o.", ",v.o.s.", ",k.s.", ",s.p.", ",a. s.", ",s. r. o.", ",spol. s r. o.", ",v. o. s.", ",k. s.", ",s. p."}
     
     -- Odstranění právních forem
     repeat with legalForm in legalForms
