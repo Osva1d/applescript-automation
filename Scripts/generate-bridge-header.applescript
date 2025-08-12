@@ -1,6 +1,40 @@
 -- Kompletní skript: Safari → Bridge hlavička
--- Funkce pro očištění textu
-on cleanText(inputText)
+-- Funkce pro zkrácení a očištění názvu klienta
+on cleanClientName(clientName, maxLength)
+    set cleanedName to my cleanText(clientName)
+    
+    -- Seznam právních forem k odstranění
+    set legalForms to {", a.s.", ", s.r.o.", ", spol. s r.o.", ", v.o.s.", ", k.s.", ", s.p.", " a.s.", " s.r.o.", " spol. s r.o.", " v.o.s.", " k.s.", " s.p.", " a. s.", " s. r. o.", " spol. s r. o.", " v. o. s.", " k. s.", " s. p.", " Ltd.", " Inc.", " LLC", " GmbH", " AG", " SE", " SAS", " SARL"}
+    
+    -- Odstranění právních forem
+    repeat with legalForm in legalForms
+        if cleanedName ends with legalForm then
+            set cleanedName to text 1 thru ((length of cleanedName) - (length of legalForm)) of cleanedName
+            exit repeat
+        end if
+    end repeat
+    
+    -- Další čištění na konci
+    set cleanedName to my cleanText(cleanedName)
+    
+    -- Zkrácení, pokud je příliš dlouhé
+    if length of cleanedName > maxLength then
+        set cleanedName to text 1 thru maxLength of cleanedName
+        -- Oříznutí na posledním celém slově
+        set lastSpacePos to 0
+        repeat with i from maxLength to 1 by -1
+            if character i of cleanedName is " " then
+                set lastSpacePos to i - 1
+                exit repeat
+            end if
+        end repeat
+        if lastSpacePos > 0 then
+            set cleanedName to text 1 thru lastSpacePos of cleanedName
+        end if
+    end if
+    
+    return cleanedName
+end cleanClientName
     set cleanedText to inputText
     
     -- Odstranění bílých znaků ze začátku
@@ -26,7 +60,8 @@ on cleanText(inputText)
     return cleanedText
 end cleanText
 
--- Funkce pro vytvoření centrované hlavičky Bridge
+-- Funkce pro očištění textu
+on cleanText(inputText)
 on createBridgeHeader(clientName, technology, projectNumber, lastTwoDigits)
     set totalWidth to 85  -- Menlo font šířka
     set rightText to lastTwoDigits & "_" & projectNumber
@@ -153,9 +188,12 @@ tell application "Safari"
         
         -- Očištění textů
         set projectNumber to my cleanText(projectNumber)
-        set clientName to my cleanText(clientName)
         set projectName to my cleanText(projectName)
         set technology to my cleanText(technology)
+        
+        -- Zpracování názvu klienta - očištění a zkrácení
+        set maxClientLength to 25  -- Maximální délka názvu klienta
+        set clientName to my cleanClientName(clientName, maxClientLength)
         
         -- Zobrazení extrahovaných dat
         if projectNumber is not "" and clientName is not "" and technology is not "" then
