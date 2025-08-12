@@ -15,7 +15,7 @@ Automatizace workflow pro tiskové studio - vytváření projektových složek a
 - Automatické kopírování do schránky
 
 ## Autor
-- **Koncept a testování:** Ladislav Osvald]
+- **Koncept a testování:** Ladislav Osvald
 - **Implementace:** Claude (Anthropic AI)
 - **Rok:** 2025
 
