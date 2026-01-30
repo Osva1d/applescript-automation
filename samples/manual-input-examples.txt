@@ -1,0 +1,74 @@
+# Příklady formátu pro manuální zadání
+
+## ✅ Standardní zadání
+
+```
+12345 - ACME Corp - Logo Redesign
+```
+
+**Výsledek:** Složka `12345 - ACME Corp - Logo Redesign/`
+
+---
+
+## ✅ S českými znaky
+
+```
+67890 - Česká společnost - Výroční zpráva
+```
+
+**Výsledek:** Složka `67890 - Česká společnost - Výroční zpráva/`
+
+---
+
+## ✅ Se speciálními znaky (budou sanitizovány)
+
+```
+11223 - Client/Name (©2024) - Project:Test
+```
+
+**Výsledek:** Složka `11223 - Client_Name _2024_ - Project_Test/`
+
+Znaky `/`, `:`, `©` nahrazeny za `_`
+
+---
+
+## ✅ S číslem obsahujícím tečku (původní formát ze Safari)
+
+```
+123.45 - Client - Project
+```
+
+**Výsledek:** Číslo bude `12345` (tečka automaticky odstraněna)  
+**Složka:** `12345 - Client - Project/`
+
+---
+
+## ❌ Dlouhé názvy (překročí limit)
+
+```
+99999 - Very Long Client Name That Might Exceed Maximum Filesystem Length Limit For macOS - And An Equally Long Project Name That Will Push It Over The Edge Of Two Hundred Forty Characters Which Is The Validation Limit
+```
+
+**Výsledek:** Skript zobrazí alert "Název složky je příliš dlouhý"  
+**Řešení:** Zkraťte název klienta nebo projektu
+
+---
+
+## ❌ Nesprávný formát (chybí oddělovače)
+
+```
+12345 ACME Corp Logo
+```
+
+**Výsledek:** Skript zobrazí chybu "Chybný formát dat!"  
+**Řešení:** Použijte formát `číslo - klient - projekt` (s pomlčkami a mezerami)
+
+---
+
+## 📋 Formátová pravidla
+
+1. **Povinný formát:** `číslo - klient - projekt`
+2. **Oddělovač:** mezera-pomlčka-mezera (` - `)
+3. **Minimálně 3 části** (číslo, klient, projekt)
+4. **Max délka:** Celkem 240 znaků po sanitizaci
+5. **Nebezpečné znaky:** Automaticky nahrazeny za `_` (např. `/\:*?"<>|®™©•°`)

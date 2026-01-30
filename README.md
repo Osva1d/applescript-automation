@@ -51,6 +51,77 @@ Pro rychlé spouštění můžete použít **Automator**:
 3. Hlavička se zkopíruje do schránky
 4. Vložte do Adobe Bridge (Cmd+V)
 
+---
+
+## Troubleshooting
+
+### Safari vrací chybu při čtení dat
+
+**Symptom:** Dialog "Chyba při čtení dat ze Safari"
+
+**Řešení:**
+1. Zkontrolujte, že jste na správné stránce zakázkového listu
+2. Zkuste obnovit stránku (Cmd+R)
+3. Použijte manuální zadání dat ve formátu: `číslo - klient - projekt`
+   - **Příklad:** `12345 - ACME Corp - Logo Redesign`
+
+**Safari DOM struktura:**  
+Skript očekává HTML strukturu s elementy:
+- `<span class="Header1">` obsahující "Zakázka číslo: X.Y"
+- `<td class="TabColHead">` s textami "Projekt:" a "Klient:"
+- `<td class="TabValue">` s hodnotami vedle
+
+Pokud se struktura zakázkového listu změní, použijte manuální zadání.
+
+### Složka již existuje
+
+**Symptom:** Alert "Složka již existuje"
+
+**Řešení:**
+- Klikněte "Otevřít složku" pro zobrazení existující struktury
+- Pokud chcete vytvořit novou, změňte číslo zakázky nebo název projektu
+
+### Disk není připojený
+
+**Symptom:** Alert "Síťový disk není připojen"
+
+**Řešení:**
+1. Připojte síťový disk (např. `StudioTwo_T5` v Finderu)
+2. Ověřte cestu v souboru skriptu:
+   - Otevřete skript v Script Editor
+   - Najděte řádek: `property PROJECT_BASE_PATH : "..."`
+   - Upravte cestu na vaše umístění
+   - Uložte (Cmd+S)
+3. Zkuste skript znovu spustit
+
+### Safari není spuštěný
+
+**Symptom:** Alert "Safari není spuštěný"
+
+**Řešení:**
+- Spusťte Safari před spuštěním skriptu
+- Otevřete zakázkový list
+- Zkuste znovu
+
+### Název složky je příliš dlouhý
+
+**Symptom:** Alert "Název složky je příliš dlouhý"
+
+**Řešení:**
+- macOS limit pro názvy složek je 255 znaků (skript kontroluje 240)
+- Zkraťte název klienta nebo projektu v zakázkovém listě
+- Nebo použijte manuální zadání s kratšími názvy
+
+---
+
+## Changelog
+
+Všechny změny jsou dokumentovány v [CHANGELOG.md](CHANGELOG.md).
+
+**Aktuální verze:** 1.1.0 (2026-01-30)
+
+---
+
 ## Autor
 - **Koncept a testování:** Ladislav Osvald
 - **Implementace:** Claude (Anthropic AI)
