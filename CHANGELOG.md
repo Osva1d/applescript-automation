@@ -6,9 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.2.0] - 2026-02-14
+
+### Added
+
+- **create-project-folders**: Full-page PDF capture of order sheet to `pracovni/` folder using Safari's native "Export as PDF"
+- **create-project-folders**: UI feedback for PDF capture success/failure in final dialog
+
+### Changed
+
+- **create-project-folders**: Author updated to Osva1d, comments English-only unification
+- **generate-bridge-header**: Author updated to Osva1d, comments English-only unification (v1.1.1)
+
+---
+
 ## [1.1.0] - 2026-01-30
 
 ### Added
+
 - **create-project-folders**: [FIX] Oprava kódování souboru na UTF-8 (plná podpora české diakritiky).
 - **create-project-folders**: [IMP] Idempotence check - skript detekuje existující složku (H1).
 - **create-project-folders**: [IMP] Validace připojeného disku před pokusem o vytvoření (M1).
