@@ -412,11 +412,14 @@ end openInBridge
 -- ---------------------------------------------------------------------------
 
 -- Entry point for Shortcuts.app
-on run {input, parameters}
+on run argv
+	-- Accept both Shortcuts.app {input, parameters} and direct invocation (no args)
+	if class of argv is not list then set argv to {}
+
 	-- Guard: verify volume is mounted before any file operations
 	if not my checkVolumeAvailable(PROJECT_BASE_PATH) then
 		display notification "Disk není připojen." with title "Bridge hlavička"
-		return input
+		return argv
 	end if
 
 	-- Detect Bridge version once
@@ -425,7 +428,7 @@ on run {input, parameters}
 	set orderData to my extractOrderData()
 	if orderData is missing value then
 		display notification "Safari nemá otevřenou stránku zakázky." with title "Bridge hlavička"
-		return input
+		return argv
 	end if
 
 	set parsedData to my parseOrderData(orderData)
@@ -435,8 +438,8 @@ on run {input, parameters}
 
 	if orderNumber is "" or clientName is "" or technology is "" then
 		activate
-		display dialog "Nepodařilo se extrahovat všechna data:" & return & return & "Číslo: " & orderNumber & return & "Klient: " & clientName & return & "Technologie: " & technology buttons {"OK"} default button "OK" with icon caution
-		return input
+		display dialog "Nepodařilo se extrahovat všechna data:" & return & return & "Zakázka: " & orderNumber & return & "Klient: " & clientName & return & "Technologie: " & technology buttons {"OK"} default button "OK" with title "Bridge hlavička" with icon caution
+		return argv
 	end if
 
 	set yearSuffix to my getCurrentYearSuffix()
@@ -445,45 +448,37 @@ on run {input, parameters}
 	on error errMsg
 		if errMsg contains "HEADER_TOO_LONG" then
 			activate
-			display dialog "Jméno klienta je příliš dlouhé pro šířku hlavičky (" & TOTAL_HEADER_WIDTH & " znaků)." buttons {"OK"} default button "OK" with icon caution
-			return input
+			display dialog "Jméno klienta je příliš dlouhé pro šířku hlavičky (" & TOTAL_HEADER_WIDTH & " znaků)." buttons {"OK"} default button "OK" with title "Bridge hlavička" with icon caution
+			return argv
 		else
 			error errMsg
 		end if
 	end try
 
-	-- Show header preview before copying to clipboard
-	activate
-	set userChoice to button returned of (display dialog "Hlavička:" & return & return & bridgeHeader & return & return & "(zarovnání je viditelné pouze v monospace fontu)" & return & return & "Zkopírovat do schránky?" buttons {"Zrušit", "Zkopírovat"} default button "Zkopírovat" with icon note)
-	if userChoice is "Zrušit" then return input
-
-	set the clipboard to bridgeHeader
-
-	-- Open Bridge before dialog so it loads in background
+	-- Prepare everything before showing dialog (eliminates post-dialog delay)
+	set orderLabel to yearSuffix & "_" & orderNumber
 	set productionFolder to my findProductionFolder(orderNumber, yearSuffix)
-	set bridgeResult to ""
+
+	-- Single preview dialog: verify extracted data, Enter to proceed
+	set previewMsg to "Zakázka: " & orderLabel & return & "Klient: " & clientName & return & "Technologie: " & technology
+	if productionFolder is not "" then
+		set previewMsg to previewMsg & return & return & "Složka nalezena — otevře se v Bridge."
+	else
+		set previewMsg to previewMsg & return & return & "Složka nenalezena na disku."
+	end if
+
+	activate
+	set userChoice to button returned of (display dialog previewMsg with title "Bridge hlavička" buttons {"Zrušit", "Kopírovat"} default button "Kopírovat")
+	if userChoice is "Zrušit" then return argv
+
+	-- Action: copy to clipboard + open Bridge + focus
+	set the clipboard to bridgeHeader
 	if productionFolder is not "" then
 		set bridgeResult to my openInBridge(productionFolder, bridgeAppName)
+		if bridgeResult is "" then
+			tell application bridgeAppName to activate
+		end if
 	end if
 
-	-- Build status message
-	set statusMsg to "Číslo: " & orderNumber & return & "Klient: " & clientName & return & "Technologie: " & technology & return & return & "Hlavička zkopírována do schránky."
-	if productionFolder is not "" and bridgeResult is "" then
-		set statusMsg to statusMsg & return & return & "Bridge: " & productionFolder & return & "Vložte hlavičku do záhlaví: Cmd+V"
-	else if productionFolder is "" then
-		set statusMsg to statusMsg & return & return & "Produkční složka nenalezena na disku."
-	else
-		set statusMsg to statusMsg & return & return & "Bridge se nepodařilo otevřít: " & bridgeResult
-	end if
-
-	-- Show summary while Bridge loads
-	activate
-	display dialog statusMsg buttons {"OK"} default button "OK" with icon note
-
-	-- After OK, focus Bridge for immediate Cmd+V
-	if productionFolder is not "" and bridgeResult is "" then
-		tell application bridgeAppName to activate
-	end if
-
-	return input
+	return argv
 end run

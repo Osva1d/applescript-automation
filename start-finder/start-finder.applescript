@@ -1,8 +1,8 @@
 -- ===========================================================================
 -- Script:      Start Finder
--- Version:     14.4.0
+-- Version:     14.4.1
 -- Author:      Osva1d
--- Updated:     2026-03-22
+-- Updated:     2026-03-26
 -- Description: Login Finder setup - network volumes and tab panels for print production.
 -- ===========================================================================
 
@@ -49,7 +49,9 @@ property PANEL_PATHS : {¬
 -- Main Entry Point
 -- ---------------------------------------------------------------------------
 
-on run {input, parameters}
+on run argv
+	-- Accept both Shortcuts.app {input, parameters} and direct invocation (no args)
+	if class of argv is not list then set argv to {}
 	set AppleScript's text item delimiters to ""
 	try
 		-- Wait for network availability (exits on timeout)
@@ -83,7 +85,7 @@ on run {input, parameters}
 		error errMsg number errNum
 	end try
 	set AppleScript's text item delimiters to ""
-	return input
+	return argv
 end run
 
 
@@ -124,6 +126,8 @@ end waitForNetwork
 -- ---------------------------------------------------------------------------
 
 -- Mount network volumes that are not already connected.
+-- Uses mount volume return value (synchronous) instead of polling Finder disk list,
+-- so mount succeeds even when the actual mount point name differs from dName.
 -- Returns list of volume names that failed to mount.
 --
 -- Parameters:
@@ -145,18 +149,8 @@ on mountVolumes(volumeList)
 
 		if not alreadyMounted then
 			try
-				-- mount volume is Standard Additions, called outside tell Finder
+				-- mount volume returns alias of actual mount point (may differ from dName)
 				mount volume volAddr
-				-- Wait for volume to appear (max 5 seconds)
-				repeat with t from 1 to 10
-					tell application "Finder" to set alreadyMounted to (exists disk volName)
-					if alreadyMounted then exit repeat
-					delay 0.5
-				end repeat
-				-- Verify mount succeeded
-				if not alreadyMounted then
-					set end of failedVolumes to volName
-				end if
 			on error errMsg
 				set end of failedVolumes to volName
 			end try

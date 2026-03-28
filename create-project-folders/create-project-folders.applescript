@@ -274,18 +274,21 @@ end createProjectFolders
 -- ---------------------------------------------------------------------------
 
 -- Entry point for Shortcuts.app (compatible with Script Editor and Automator).
-on run {input, parameters}
+on run argv
+	-- Accept both Shortcuts.app {input, parameters} and direct invocation (no args)
+	if class of argv is not list then set argv to {}
+
 	-- Guard: verify volume is mounted before any file operations
 	if not my checkVolumeAvailable(PROJECT_BASE_PATH) then
 		display notification "Disk není připojen." with title "Projektové složky"
-		return input
+		return argv
 	end if
 
 	set orderData to my extractOrderData()
 
 	if orderData is missing value then
 		display notification "Safari nemá otevřenou stránku zakázky." with title "Projektové složky"
-		return input
+		return argv
 	end if
 
 	set parsedData to my parseOrderData(orderData)
@@ -295,27 +298,20 @@ on run {input, parameters}
 
 	if orderNumber is "" or clientName is "" or projectName is "" then
 		activate
-		display dialog "Nepodařilo se extrahovat všechna data:" & return & return & "Číslo: " & orderNumber & return & "Klient: " & clientName & return & "Projekt: " & projectName buttons {"OK"} default button "OK" with icon caution
-		return input
+		display dialog "Nepodařilo se extrahovat všechna data:" & return & return & "Zakázka: " & orderNumber & return & "Klient: " & clientName & return & "Projekt: " & projectName buttons {"OK"} default button "OK" with title "Projektové složky" with icon caution
+		return argv
 	end if
 
-	-- Confirmation before folder creation (destructive action)
+	-- Single preview dialog: verify extracted data, Enter to proceed
 	set projectInfo to orderNumber & " - " & clientName & " - " & projectName
+	set previewMsg to "Zakázka: " & orderNumber & return & "Klient: " & clientName & return & "Projekt: " & projectName & return & return & "Složka: " & projectInfo
+
 	activate
-	set userChoice to button returned of (display dialog "Číslo: " & orderNumber & return & "Klient: " & clientName & return & "Projekt: " & projectName & return & "Složka: " & projectInfo & return & return & "Vytvořit projektové složky?" buttons {"Zrušit", "Vytvořit"} default button "Vytvořit" with icon note)
+	set userChoice to button returned of (display dialog previewMsg with title "Projektové složky" buttons {"Zrušit", "Vytvořit"} default button "Vytvořit")
+	if userChoice is "Zrušit" then return argv
 
-	if userChoice is "Vytvořit" then
-		set success to my createProjectFolders(orderNumber, clientName, projectName)
-		if success then
-			set userAction to button returned of (display dialog orderNumber & " - " & clientName & " - složky vytvořeny" buttons {"Zavřít", "Zobrazit ve Finderu"} default button "Zobrazit ve Finderu" with icon note)
-			if userAction is "Zobrazit ve Finderu" then
-				tell application "Finder"
-					reveal (POSIX file (PROJECT_BASE_PATH & "/" & projectInfo) as alias)
-					activate
-				end tell
-			end if
-		end if
-	end if
+	-- Action: create folders (no Finder reveal — target folder is already open in a panel)
+	my createProjectFolders(orderNumber, clientName, projectName)
 
-	return input
+	return argv
 end run
