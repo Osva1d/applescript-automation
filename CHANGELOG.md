@@ -6,6 +6,51 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2.0.0] - 2026-03
+
+### Added
+
+- **start-finder** (v14.4.1): New login automation script
+  - Network server availability check with configurable timeout
+  - Automatic AFP/SMB volume mounting
+  - Finder window with tabbed panels for production folders
+  - Progress notification during network wait
+  - Summary notification with mount/panel status
+  - Graceful handling of unavailable volumes (skipped, not crashed)
+- **generate-bridge-header**: `findProductionFolder()` - locates production folder on disk
+- **generate-bridge-header**: `openInBridge()` - opens folder in Adobe Bridge
+- **generate-bridge-header**: `checkVolumeAvailable()` - volume check before file operations
+- **generate-bridge-header**: `getBridgeAppName()` - dynamic detection of installed Adobe Bridge version
+- **generate-bridge-header**: `extractJSONValue()` - lightweight JSON field extraction
+- **generate-bridge-header**: `PROJECT_BASE_PATH` property for production folder lookup
+- **create-project-folders**: `checkVolumeAvailable()` - standalone volume check function
+- **create-project-folders**: Leading dot stripping in `cleanText()` to prevent hidden files
+
+### Changed
+
+- **create-project-folders** (v1.2.0 -> v1.3.0):
+  - Refactored to `on run argv` entry point for Shortcuts.app compatibility
+  - Simplified `DANGEROUS_CHARS` to basic filesystem-unsafe characters (removed emoji/symbol set)
+  - Disk availability check uses notification instead of modal dialog
+  - Removed UI string properties (inlined)
+  - Removed PDF capture feature (`captureOrderSheet`) - moved to separate workflow
+  - Simplified comment header from block `(* *)` to line `--` style
+- **generate-bridge-header** (v1.1.1 -> v2.3.0):
+  - Major refactor with Shortcuts.app compatible `on run argv` entry point
+  - JSON-based Safari data extraction (replaces direct DOM scraping)
+  - Simplified `getLegalForms()` - focused Czech forms + key international (was 280+ variants)
+  - Renamed `cleanText()` to `stripDisplayText()` to clarify its purpose
+  - `createBridgeHeader()` now throws `"HEADER_TOO_LONG"` error instead of returning error string
+  - Integer division (`div`) for center position calculation
+  - Removed UI string properties (inlined)
+
+### Security
+
+- All scripts now use placeholder values for paths and server names
+- Real configuration values must be set by the user before first use
+
+---
+
 ## [1.2.0] - 2026-02-14
 
 ### Added

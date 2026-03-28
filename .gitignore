@@ -7,8 +7,11 @@
 ehthumbs.db
 Thumbs.db
 
-# Dočasné soubory
+# Docasne soubory
 *.tmp
 *~
 *.swp
 *.lock
+
+# Deploy skripty (privatni)
+_deploy/

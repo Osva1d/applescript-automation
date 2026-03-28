@@ -1,0 +1,35 @@
+# start-finder.applescript — Example Configuration
+#
+# Adjust these property values in the script to match your environment.
+# Below are examples for a typical print studio setup.
+
+# ─── Network check ───────────────────────────────────────────────
+# Server used to verify network availability before mounting volumes.
+property CHECK_SERVER : "fileserver.local"
+
+# ─── Server list ─────────────────────────────────────────────────
+# Each entry: {dName:"VolumeName", dAddr:"protocol://host/share"}
+# Supported protocols: afp://, smb://
+property SERVER_LIST : {¬
+    {dName:"PrintData", dAddr:"afp://fileserver.local/PrintData"}, ¬
+    {dName:"Production", dAddr:"smb://fileserver.local/Production"}, ¬
+    {dName:"Backup", dAddr:"smb://backup-server.local/Backup"}}
+
+# ─── Finder panel paths ─────────────────────────────────────────
+# POSIX paths for Finder tabs. First path = main window target.
+# Paths pointing to unmounted volumes are silently skipped.
+property PANEL_PATHS : {¬
+    "/Volumes/PrintData", ¬
+    "/Volumes/Production", ¬
+    "/Volumes/Production/CuttingFiles", ¬
+    "/Volumes/Backup"}
+
+# ─── Timing ──────────────────────────────────────────────────────
+property NETWORK_TIMEOUT : 60   -- seconds to wait for network
+property TAB_DELAY : 0.6        -- seconds between tab creation (increase on slow machines)
+
+# ─── Window ──────────────────────────────────────────────────────
+# {left, top, right, bottom} in pixels
+# Tip: Run in Script Editor to find your screen size:
+#   tell application "Finder" to get bounds of window of desktop
+property WINDOW_BOUNDS : {50, 50, 1600, 1000}
