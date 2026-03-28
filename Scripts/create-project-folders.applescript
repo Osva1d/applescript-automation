@@ -1,480 +1,317 @@
-﻿(*
- * ===========================================================================
- * Script:      Create Project Folders
- * Version:     1.2.0
- * Author:      Osva1d
- * Updated:     2026-02-14
- * 
- * Description:
- *   Project folder creation script for print production with Safari extraction.
- * ===========================================================================
- *)
+-- ===========================================================================
+-- Script:      Create Project Folders
+-- Version:     1.3.0
+-- Author:      Osva1d
+-- Updated:     2026-03-15
+-- Description: Creates project folder structure from Safari order page data.
+-- ===========================================================================
 
+
+-- ---------------------------------------------------------------------------
 -- Configuration
-property PROJECT_BASE_PATH : "/Volumes/StudioTwo_T5/MARA/Tisk Studio Two"
+-- ---------------------------------------------------------------------------
+
+property PROJECT_BASE_PATH : "/Volumes/PrintServer/Projects/Print Production"
 property SUBFOLDER_NAMES : {"pracovni", "zdroje"}
-property DANGEROUS_CHARS : {"/", "\\", ":", "*", "?", "\"", "<", ">", "|", "®", "™", "©", "•", "°"}
+property DANGEROUS_CHARS : {"/", "\\", ":", "*", "?", "<", ">", "|"}
 
--- UI Strings
-property UI_BTN_OK : "OK"
-property UI_BTN_CANCEL : "Zrušit"
-property UI_BTN_CREATE : "Vytvořit"
-property UI_BTN_OPEN : "Otevřít složku"
 
--- Clean and sanitize text for folder names
+-- ---------------------------------------------------------------------------
+-- Helpers
+-- ---------------------------------------------------------------------------
+
+-- Check whether a POSIX path is accessible (volume mounted).
 --
 -- Parameters:
---   inputText (string) - Raw text from Safari or user input
+--   basePath (string) - POSIX path to check
 --
 -- Returns:
---   (string) - Sanitized text safe for macOS file system
+--   (boolean) - true if path is accessible
+--
+on checkVolumeAvailable(basePath)
+	try
+		POSIX file basePath as alias
+		return true
+	on error
+		return false
+	end try
+end checkVolumeAvailable
+
+-- Trim whitespace, collapse multiple spaces, replace filesystem-unsafe chars
+-- with underscore, collapse consecutive underscores.
+--
+-- Parameters:
+--   inputText (string) - raw text to sanitize
+--
+-- Returns:
+--   (string) - cleaned text safe for use as folder name component
 --
 on cleanText(inputText)
 	set cleanedText to inputText
-	
-	-- Remove whitespace from beginning
-	repeat while cleanedText starts with " " or cleanedText starts with tab or cleanedText starts with return
-		if length of cleanedText > 1 then
-			set cleanedText to text 2 thru -1 of cleanedText
-		else
-			set cleanedText to ""
-			exit repeat
-		end if
-	end repeat
-	
-	-- Remove whitespace from end
-	repeat while cleanedText ends with " " or cleanedText ends with tab or cleanedText ends with return
-		if length of cleanedText > 1 then
-			set cleanedText to text 1 thru -2 of cleanedText
-		else
-			set cleanedText to ""
-			exit repeat
-		end if
-	end repeat
-	
-	-- Remove double spaces
-	repeat while cleanedText contains "  "
-		set AppleScript's text item delimiters to "  "
-		set textParts to text items of cleanedText
+	try
+		repeat while cleanedText starts with " " or cleanedText starts with tab or cleanedText starts with return
+			if length of cleanedText > 1 then
+				set cleanedText to text 2 thru -1 of cleanedText
+			else
+				set cleanedText to ""
+				exit repeat
+			end if
+		end repeat
+		repeat while cleanedText ends with " " or cleanedText ends with tab or cleanedText ends with return
+			if length of cleanedText > 1 then
+				set cleanedText to text 1 thru -2 of cleanedText
+			else
+				set cleanedText to ""
+				exit repeat
+			end if
+		end repeat
+		-- Collapse all runs of spaces to single space (single pass)
 		set AppleScript's text item delimiters to " "
-		set cleanedText to textParts as string
-	end repeat
-	
-	set AppleScript's text item delimiters to ""
-	
-	-- Replace dangerous characters
-	set replacementChar to "_"
-	repeat with dangerousChar in DANGEROUS_CHARS
-		set AppleScript's text item delimiters to dangerousChar
-		set textParts to text items of cleanedText
-		set AppleScript's text item delimiters to replacementChar
-		set cleanedText to textParts as string
-	end repeat
-	
-	set AppleScript's text item delimiters to ""
-	
-	-- Remove multiple underscores
-	repeat while cleanedText contains "__"
-		set AppleScript's text item delimiters to "__"
-		set textParts to text items of cleanedText
-		set AppleScript's text item delimiters to "_"
-		set cleanedText to textParts as string
-	end repeat
-	
-	-- Remove underscore from beginning or end
-	if cleanedText starts with "_" then set cleanedText to text 2 thru -1 of cleanedText
-	if cleanedText ends with "_" then set cleanedText to text 1 thru -2 of cleanedText
-	
+		set nonEmptyParts to {}
+		repeat with part in (text items of cleanedText)
+			if part as string is not "" then
+				set end of nonEmptyParts to (part as string)
+			end if
+		end repeat
+		set cleanedText to nonEmptyParts as string
+		set AppleScript's text item delimiters to ""
+		set replacementChar to "_"
+		repeat with dangerousChar in DANGEROUS_CHARS
+			set AppleScript's text item delimiters to dangerousChar
+			set textParts to text items of cleanedText
+			set AppleScript's text item delimiters to replacementChar
+			set cleanedText to textParts as string
+		end repeat
+		set AppleScript's text item delimiters to ""
+		repeat while cleanedText contains "__"
+			set AppleScript's text item delimiters to "__"
+			set textParts to text items of cleanedText
+			set AppleScript's text item delimiters to "_"
+			set cleanedText to textParts as string
+		end repeat
+		set AppleScript's text item delimiters to ""
+		-- Strip leading dots to prevent hidden files/folders
+		repeat while cleanedText starts with "."
+			if length of cleanedText > 1 then
+				set cleanedText to text 2 thru -1 of cleanedText
+			else
+				set cleanedText to ""
+				exit repeat
+			end if
+		end repeat
+	on error errMsg
+		set AppleScript's text item delimiters to ""
+		error errMsg
+	end try
 	return cleanedText
 end cleanText
 
--- Get current year last two digits
---
--- Returns:
---   (string) - Last two digits of current year (e.g., "26" for 2026)
---
+-- Return last two digits of current year (e.g. "26" for 2026).
+-- NOTE: Shared with generate-bridge-header.applescript — keep in sync.
 on getCurrentYearSuffix()
 	set currentYear to year of (current date)
 	return text -2 thru -1 of (currentYear as string)
 end getCurrentYearSuffix
 
--- Extract order data from active Safari page using JavaScript
+
+-- ---------------------------------------------------------------------------
+-- Safari Data Extraction
+-- ---------------------------------------------------------------------------
+
+-- Extract order data from the active Safari document via JavaScript.
+-- Falls back to a manual input dialog if JavaScript fails.
 --
 -- Returns:
---   (string) - Order JSON or manual input prefix
+--   (string) - tab-separated values from page, "manual:<data>" from dialog,
+--              or missing value if user cancels / no document open
 --
 on extractOrderData()
-	tell application "System Events"
-		if not (exists process "Safari") then
-			activate
-			display alert "Safari není spuštěný" message "Spusťte Safari, otevřete zakázkový list, a zkuste znovu." buttons {UI_BTN_OK} default button UI_BTN_OK
-			return missing value
-		end if
-	end tell
-	
 	tell application "Safari"
 		if not (exists front document) then
-			display dialog "Nejdříve otevřete zakázkový list v Safari!" buttons {UI_BTN_OK} default button UI_BTN_OK
 			return missing value
 		end if
-		
 		try
 			set extractedData to do JavaScript "
-				var result = {};
-				
-				// Extract order number
-				var orderSpan = document.querySelector('span.Header1');
-				if (orderSpan) {
-					var text = orderSpan.textContent;
-					var match = text.match(/Zakázka číslo:\\s*(\\d+\\.\\d+)/);
-					if (match) {
-						result.orderNumber = match[1].replace('.', '');
-					}
-				}
-				
-				// Extract project name
-				var projectCell = document.querySelector('td.Task1[width=\"420\"]');
-				if (projectCell) {
-					result.projectName = projectCell.textContent.trim();
-				}
-				
-				// Extract client name
-				var clientCell = document.querySelector('td.Task1[width=\"220\"]');
-				if (clientCell) {
-					result.clientName = clientCell.textContent.trim();
-				}
-				
-				return JSON.stringify(result);
-			" in front document
-			
+                var orderNumber = '';
+                var clientName = '';
+                var projectName = '';
+                var orderSpan = document.querySelector('span.Header1');
+                if (orderSpan) {
+                    var text = orderSpan.textContent;
+                    var match = text.match(/Zakázka\\s*číslo:\\s*([\\d\\.]+)/);
+                    if (match) {
+                        var rawNum = match[1].replace(/\\./g, '');
+                        while (rawNum.length < 4) {
+                            rawNum = '0' + rawNum;
+                        }
+                        orderNumber = rawNum;
+                    }
+                }
+                var allHeaders = document.querySelectorAll('td.TabColHead');
+                for (var i = 0; i < allHeaders.length; i++) {
+                    var headerText = allHeaders[i].textContent.trim();
+                    var nextCell = allHeaders[i].nextElementSibling;
+                    if (nextCell && nextCell.classList.contains('TabValue')) {
+                        if (headerText === 'Projekt:') {
+                            projectName = nextCell.textContent.trim();
+                        } else if (headerText === 'Klient:') {
+                            clientName = nextCell.textContent.trim();
+                        }
+                    }
+                }
+                orderNumber + '\\t' + clientName + '\\t' + projectName;
+            " in front document
 			return extractedData
-			
 		on error errorMessage
-			-- Show error and ask for manual input
-			display dialog "Chyba při čtení dat ze Safari. Zadejte údaje ručně:" & return & "Formát: číslo - klient - název projektu" default answer "" buttons {UI_BTN_CANCEL, UI_BTN_OK} default button UI_BTN_OK
-			if button returned of result is UI_BTN_CANCEL then
+			activate
+			set dialogResult to display dialog "Chyba při čtení dat ze Safari. Zadejte údaje ručně:" & return & "Formát: číslo - klient - název projektu" default answer "" buttons {"Zrušit", "OK"} default button "OK"
+			if button returned of dialogResult is "Zrušit" then
 				return missing value
 			end if
-			-- Return manual input with special prefix
-			return "manual:" & (text returned of result)
+			return "manual:" & (text returned of dialogResult)
 		end try
 	end tell
 end extractOrderData
 
--- Safely extract value from JSON-like string
+-- Parse raw string from extractOrderData() into a structured record.
+-- Handles both tab-separated (page extraction) and "manual:<data>" (fallback dialog).
 --
 -- Parameters:
---   jsonData (string) - JSON string
---   fieldName (string) - Key to extract
+--   rawData (string) - output of extractOrderData()
 --
 -- Returns:
---   (string) - Extracted value
+--   (record) {orderNumber, clientName, projectName} - empty strings on failure
 --
-on extractJSONValue(jsonData, fieldName)
-	try
-		set searchPattern to "\"" & fieldName & "\":\""
-		set AppleScript's text item delimiters to searchPattern
-		set tempParts to text items of jsonData
-		
-		if (count of tempParts) > 1 then
-			set afterKey to item 2 of tempParts
-			set AppleScript's text item delimiters to "\""
-			return item 1 of text items of afterKey
-		end if
-	end try
-	return ""
-end extractJSONValue
-
--- Parse order data from JSON or manual input
---
--- Parameters:
---   jsonData (string) - JSON string or "manual:" prefixed input
---
--- Returns:
---   (record) - {orderNumber:string, clientName:string, projectName:string}
---
-on parseOrderData(jsonData)
+on parseOrderData(rawData)
 	set orderNumber to ""
 	set projectName to ""
 	set clientName to ""
-	
 	try
-		-- Handle manual input
-		if jsonData starts with "manual:" then
-			set manualData to text 8 thru -1 of jsonData
+		if rawData starts with "manual:" then
+			set manualData to text 8 thru -1 of rawData
 			set AppleScript's text item delimiters to " - "
 			set dataParts to text items of manualData
-			
-			if (count of dataParts) is 3 then
+			set AppleScript's text item delimiters to ""
+			if (count of dataParts) ≥ 3 then
+				set orderNumber to item 1 of dataParts
+				set clientName to item 2 of dataParts
+				-- Rejoin items 3+ to preserve " - " in project names
+				set projectName to item 3 of dataParts
+				repeat with i from 4 to (count of dataParts)
+					set projectName to projectName & " - " & item i of dataParts
+				end repeat
+			else
+				activate
+				display dialog "Nesprávný formát zadání:" & return & return & "Zadáno: " & manualData & return & return & "Očekávaný formát: číslo - klient - název projektu" & return & "(odděleno " & quote & " - " & quote & ")" buttons {"OK"} default button "OK" with icon caution
+			end if
+		else
+			-- Parse tab-separated values from JavaScript extraction
+			set AppleScript's text item delimiters to tab
+			set dataParts to text items of rawData
+			set AppleScript's text item delimiters to ""
+			if (count of dataParts) ≥ 3 then
 				set orderNumber to item 1 of dataParts
 				set clientName to item 2 of dataParts
 				set projectName to item 3 of dataParts
-			else
-				error "Nesprávný formát ručního zadání"
 			end if
-		else
-			-- Parse JSON safely
-			set orderNumber to my extractJSONValue(jsonData, "orderNumber")
-			set projectName to my extractJSONValue(jsonData, "projectName")
-			set clientName to my extractJSONValue(jsonData, "clientName")
 		end if
-		
-		-- Clean all texts
 		set orderNumber to my cleanText(orderNumber)
 		set clientName to my cleanText(clientName)
 		set projectName to my cleanText(projectName)
-		
-	on error errorMessage
-		-- Fallback to empty values on any parsing error
+	on error
 		set orderNumber to ""
 		set clientName to ""
 		set projectName to ""
 	end try
-	
 	return {orderNumber:orderNumber, clientName:clientName, projectName:projectName}
 end parseOrderData
 
--- Create folder structure
+
+-- ---------------------------------------------------------------------------
+-- Project Creation
+-- ---------------------------------------------------------------------------
+
+-- Create the project folder hierarchy under PROJECT_BASE_PATH.
+-- Guards against overwriting an existing folder with the same name.
 --
 -- Parameters:
---   orderNumber (string) - Order number
---   clientName (string) - Client name
---   projectName (string) - Project name
+--   orderNumber (string) - cleaned order number (e.g. "0042")
+--   clientName  (string) - cleaned client name
+--   projectName (string) - cleaned project name
 --
 -- Returns:
---   (boolean) - Success status
+--   (boolean) - true on success, false on error
 --
 on createProjectFolders(orderNumber, clientName, projectName)
 	set yearSuffix to my getCurrentYearSuffix()
-	set projectInfo to clientName & " - " & projectName
-	set mainFolderPath to (PROJECT_BASE_PATH & "/" & projectInfo) as string
-	
-	-- Validate max length (macOS limit 255 chars)
-	if length of projectInfo > 240 then
-		activate
-		display alert "Název složky je příliš dlouhý" message "Celková délka: " & (length of projectInfo) & " znaků (max 240)." & return & return & "Zkraťte název klienta nebo projektu." buttons {UI_BTN_OK} default button UI_BTN_OK
-		return false
-	end if
-	
+	set projectInfo to orderNumber & " - " & clientName & " - " & projectName
 	try
-		-- Try to get folder alias - Check if volume is mounted
-		try
-			set folderLocation to PROJECT_BASE_PATH as POSIX file as alias
-		on error
-			activate
-			display alert "Síťový disk není připojen" message "Připojte disk obsahující složku:" & return & return & PROJECT_BASE_PATH & return & return & "a zkuste znovu." buttons {UI_BTN_OK} default button UI_BTN_OK
-			return false
-		end try
-		
+		set folderLocation to PROJECT_BASE_PATH as POSIX file as alias
+		set mainFolderPath to (folderLocation as string) & projectInfo & ":"
 		tell application "Finder"
-			-- Check if main folder already exists (idempotence)
-			if exists folder projectInfo of folderLocation then
-				activate
-				display alert "Složka již existuje" message "Projektová složka \"" & projectInfo & "\" již byla vytvořena. Chcete pokračovat?" buttons {UI_BTN_CANCEL, UI_BTN_OPEN} default button UI_BTN_OPEN cancel button UI_BTN_CANCEL
-				
-				if button returned of result is UI_BTN_OPEN then
-					reveal folder (POSIX file (POSIX path of folderLocation & "/" & projectInfo) as alias)
-					activate
-				end if
-				return true -- Already exists, consider success
+			-- Guard: prevent overwriting an existing project folder
+			if exists folder mainFolderPath then
+				error "Složka \"" & projectInfo & "\" již existuje."
 			end if
-			
-			-- Create main folder
-			set mainFolder to make new folder at folderLocation with properties {name:projectInfo}
-			
-			-- Create subfolders
+			make new folder at folderLocation with properties {name:projectInfo}
 			repeat with subfolderName in SUBFOLDER_NAMES
-				make new folder at mainFolder with properties {name:subfolderName}
+				make new folder at folder mainFolderPath with properties {name:subfolderName}
 			end repeat
-			
-			-- Create final numbered folder
 			set finalFolderName to yearSuffix & "_" & orderNumber
-			make new folder at mainFolder with properties {name:finalFolderName}
+			make new folder at folder mainFolderPath with properties {name:finalFolderName}
 		end tell
-		
-		-- Export order sheet as full-page PDF to pracovni/
-		set pdfName to "Z" & orderNumber & ".pdf"
-		set pdfPath to mainFolderPath & "/pracovni/" & pdfName
-		my captureOrderSheet(pdfPath)
-		
 		return true
-		
 	on error errorMessage
-		display dialog "Chyba při vytváření složek: " & errorMessage buttons {UI_BTN_OK} default button UI_BTN_OK
+		activate
+		display dialog "Chyba při vytváření složek: " & errorMessage buttons {"OK"} default button "OK" with icon caution
 		return false
 	end try
 end createProjectFolders
 
--- Extract filename without extension from POSIX path
---
--- Parameters:
---   posixPath (string) - Full POSIX path (e.g. "/path/to/Z261234.pdf")
---
--- Returns:
---   (string) - Filename without extension (e.g. "Z261234")
---
-on getFilenameWithoutExtension(posixPath)
-	set AppleScript's text item delimiters to "/"
-	set fileName to last text item of posixPath
-	set AppleScript's text item delimiters to "."
-	set nameParts to text items of fileName
-	if (count of nameParts) > 1 then
-		set fileName to (items 1 thru -2 of nameParts) as string
+
+-- ---------------------------------------------------------------------------
+-- Entry Point
+-- ---------------------------------------------------------------------------
+
+-- Entry point for Shortcuts.app (compatible with Script Editor and Automator).
+on run argv
+	-- Accept both Shortcuts.app {input, parameters} and direct invocation (no args)
+	if class of argv is not list then set argv to {}
+
+	-- Guard: verify volume is mounted before any file operations
+	if not my checkVolumeAvailable(PROJECT_BASE_PATH) then
+		display notification "Disk není připojen." with title "Projektové složky"
+		return argv
 	end if
-	set AppleScript's text item delimiters to ""
-	return fileName
-end getFilenameWithoutExtension
 
--- Extract parent folder from POSIX path
---
--- Parameters:
---   posixPath (string) - Full POSIX path
---
--- Returns:
---   (string) - Parent directory path
---
-on getParentFolder(posixPath)
-	set AppleScript's text item delimiters to "/"
-	set pathParts to text items of posixPath
-	set parentParts to items 1 thru -2 of pathParts
-	set parentPath to parentParts as string
-	set AppleScript's text item delimiters to ""
-	return parentPath
-end getParentFolder
-
--- Export full Safari page as PDF to specified path
---
--- Uses Safari's native "Export as PDF" which captures the entire page
--- including content below the viewport (no scrolling needed).
---
--- Requires: Accessibility permissions for UI scripting
---
--- Parameters:
---   savePath (string) - POSIX path for output PDF file
---
--- Returns:
---   (boolean) - Success status
---
-on captureOrderSheet(savePath)
-	try
-		tell application "Safari" to activate
-		delay 0.5
-		
-		tell application "System Events"
-			tell process "Safari"
-				-- File → Export as PDF...
-				click menu item "Export as PDF…" of menu "File" of menu bar 1
-				
-				-- Wait for save dialog
-				repeat 30 times
-					if exists sheet 1 of window 1 then exit repeat
-					delay 0.1
-				end repeat
-				
-				if not (exists sheet 1 of window 1) then
-					error "Save dialog did not appear"
-				end if
-				
-				tell sheet 1 of window 1
-					-- Set filename (without extension, Safari adds .pdf)
-					set value of text field 1 to my getFilenameWithoutExtension(savePath)
-					
-					-- Navigate to target folder via Go To Folder (Shift+Cmd+G)
-					keystroke "g" using {shift down, command down}
-					delay 0.5
-					
-					-- Wait for path input sheet
-					repeat 20 times
-						if exists sheet 1 then exit repeat
-						delay 0.1
-					end repeat
-					
-					tell sheet 1
-						set value of text field 1 to my getParentFolder(savePath)
-						delay 0.3
-						click button "Go"
-					end tell
-					
-					delay 0.5
-					
-					-- Click Save
-					click button "Save"
-				end tell
-			end tell
-		end tell
-		
-		-- Verify file was created
-		delay 1
-		try
-			do shell script "test -f " & quoted form of savePath
-			return true
-		on error
-			return false
-		end try
-		
-	on error errorMessage
-		-- Dismiss any open dialog to leave Safari in clean state
-		try
-			tell application "System Events"
-				tell process "Safari"
-					keystroke "." using command down
-				end tell
-			end tell
-		end try
-		return false
-	end try
-end captureOrderSheet
-
--- Main execution function
-on main()
 	set orderData to my extractOrderData()
-	
-	if orderData is not missing value then
-		set parsedData to my parseOrderData(orderData)
-		set orderNumber to orderNumber of parsedData
-		set clientName to clientName of parsedData
-		set projectName to projectName of parsedData
-		
-		-- Validate extracted data
-		if orderNumber is not "" and clientName is not "" and projectName is not "" then
-			-- Show confirmation dialog
-			activate
-			display dialog "Extrahovaná data ze Safari:" & return & return & "Číslo: " & orderNumber & return & "Klient: " & clientName & return & "Projekt: " & projectName & return & return & "Vytvořit projektové složky?" buttons {UI_BTN_CANCEL, UI_BTN_CREATE} default button UI_BTN_CREATE
-			
-			if button returned of result is UI_BTN_CREATE then
-				set success to my createProjectFolders(orderNumber, clientName, projectName)
-				
-				if success then
-					set projectInfo to clientName & " - " & projectName
-					set mainFolderPath to POSIX path of ((PROJECT_BASE_PATH & "/" & projectInfo) as POSIX file)
-					
-					tell application "Finder"
-						reveal folder (mainFolderPath as POSIX file)
-						activate
-					end tell
-					delay 0.5 -- Give user time to see Finder
-					
-					-- Check if PDF was saved
-					set pdfName to "Z" & orderNumber & ".pdf"
-					set pdfFile to mainFolderPath & "/pracovni/" & pdfName
-					
-					try
-						do shell script "test -f " & quoted form of pdfFile
-						set pdfNote to return & "• Zakázkový list uložen jako " & pdfName
-					on error
-						set pdfNote to return & "• ⚠ PDF otisk zakázkového listu se nepodařil"
-					end try
-					
-					activate
-					display dialog "Složky úspěšně vytvořeny!" & return & return & "Nezapomeňte:" & return & "• Přijmout přidělení v Safari" & return & "• Nakopírovat zdroje" & pdfNote buttons {UI_BTN_OK} default button UI_BTN_OK with title "Hotovo!"
-				end if
-			end if
-		else
-			display dialog "Chybný formát dat! Použijte: číslo projektu - klient - název projektu" buttons {UI_BTN_OK} default button UI_BTN_OK
-		end if
-	else
-		display dialog "Nebyla získána žádná data. Skript bude ukončen." buttons {UI_BTN_OK} default button UI_BTN_OK
-	end if
-end main
 
-main()
+	if orderData is missing value then
+		display notification "Safari nemá otevřenou stránku zakázky." with title "Projektové složky"
+		return argv
+	end if
+
+	set parsedData to my parseOrderData(orderData)
+	set orderNumber to orderNumber of parsedData
+	set clientName to clientName of parsedData
+	set projectName to projectName of parsedData
+
+	if orderNumber is "" or clientName is "" or projectName is "" then
+		activate
+		display dialog "Nepodařilo se extrahovat všechna data:" & return & return & "Zakázka: " & orderNumber & return & "Klient: " & clientName & return & "Projekt: " & projectName buttons {"OK"} default button "OK" with title "Projektové složky" with icon caution
+		return argv
+	end if
+
+	-- Single preview dialog: verify extracted data, Enter to proceed
+	set projectInfo to orderNumber & " - " & clientName & " - " & projectName
+	set previewMsg to "Zakázka: " & orderNumber & return & "Klient: " & clientName & return & "Projekt: " & projectName & return & return & "Složka: " & projectInfo
+
+	activate
+	set userChoice to button returned of (display dialog previewMsg with title "Projektové složky" buttons {"Zrušit", "Vytvořit"} default button "Vytvořit")
+	if userChoice is "Zrušit" then return argv
+
+	-- Action: create folders (no Finder reveal — target folder is already open in a panel)
+	my createProjectFolders(orderNumber, clientName, projectName)
+
+	return argv
+end run
