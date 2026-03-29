@@ -81,18 +81,18 @@ Hlavička Bridge má pevnou šířku 85 znaků. Tato hodnota odpovídá šířce
 - Závisí na konkrétní DOM struktuře zakázkové stránky
 - Verze Bridge se detekuje automaticky z `/Applications/`, ale vyžaduje instalaci v default umístění
 
-## Deploy do verejneho repo
+## Deploy do veřejného repo
 
-Verejna verze tohoto skriptu je v repo `applescript-automation`.
-Deploy postup viz `_deploy/PLACEHOLDERS.md` v koreni incubatoru.
+Veřejná verze tohoto skriptu je v repo `applescript-automation`.
+Deploy postup viz `_deploy/PLACEHOLDERS.md` v kořeni incubátoru.
 
-Pri deployi se realne hodnoty v property sekcich automaticky nahrazuji
+Při deployi se reálné hodnoty v property sekcích automaticky nahrazují
 placeholdery (skript `_deploy/anonymize.sh`).
 
 ## Changelog
 
 ### v2.3.0 (2026-03)
-- Aktualni verze
+- Aktuální verze
 
 ---
 

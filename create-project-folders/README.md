@@ -77,18 +77,18 @@ Funkce `getCurrentYearSuffix()` je sdílena s projektem [`generate-bridge-header
 - **JavaScript nefunguje** — Zapněte menu Develop: Safari → Settings → Advanced → „Show features for web developers". Poté: Develop → Allow JavaScript from Apple Events.
 - **„Disk není připojen"** — Připojte síťový disk `PrintServer` nebo upravte `PROJECT_BASE_PATH` ve skriptu.
 
-## Deploy do verejneho repo
+## Deploy do veřejného repo
 
-Verejna verze tohoto skriptu je v repo `applescript-automation`.
-Deploy postup viz `_deploy/PLACEHOLDERS.md` v koreni incubatoru.
+Veřejná verze tohoto skriptu je v repo `applescript-automation`.
+Deploy postup viz `_deploy/PLACEHOLDERS.md` v kořeni incubátoru.
 
-Pri deployi se realne hodnoty v property sekcich automaticky nahrazuji
+Při deployi se reálné hodnoty v property sekcích automaticky nahrazují
 placeholdery (skript `_deploy/anonymize.sh`).
 
 ## Changelog
 
 ### v1.3.0 (2026-03)
-- Aktualni verze
+- Aktuální verze
 
 ---
 
