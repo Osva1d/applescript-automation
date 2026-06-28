@@ -1,6 +1,6 @@
 -- ===========================================================================
 -- Script:      Start Finder
--- Version:     14.4.1
+-- Version:     1.0.0
 -- Author:      Osva1d
 -- Updated:     2026-03-26
 -- Description: Login Finder setup - network volumes and tab panels for print production.

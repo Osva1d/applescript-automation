@@ -1,6 +1,6 @@
 -- ===========================================================================
 -- Script:      Generate Bridge Header
--- Version:     2.3.0
+-- Version:     1.0.0
 -- Author:      Osva1d
 -- Updated:     2026-03-15
 -- Description: Bridge header generator for Shortcuts.app with keyboard shortcut.
