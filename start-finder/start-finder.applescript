@@ -11,6 +11,12 @@
 -- Configuration
 -- ---------------------------------------------------------------------------
 
+-- ===========================================================================
+-- KONFIGURACE — po vložení do Shortcutu přepiš hodnoty na své a nastav
+-- CONFIG_DONE na true. Skript se jinak odmítne spustit (viz guard v on run).
+-- ===========================================================================
+property CONFIG_DONE : false
+
 -- Network server for availability check
 property CHECK_SERVER : "fileserver.local"
 
@@ -43,6 +49,9 @@ property PANEL_PATHS : {¬
 	"/Volumes/Studio/SUMMA", ¬
 	"/Volumes/Studio/NESTING TEMPLATES", ¬
 	"/Volumes/PrintServer/Projects/Print Production"}
+-- ===========================================================================
+-- KONEC KONFIGURACE
+-- ===========================================================================
 
 
 -- ---------------------------------------------------------------------------
@@ -54,6 +63,9 @@ on run argv
 	if class of argv is not list then set argv to {}
 	set AppleScript's text item delimiters to ""
 	try
+		-- Guard: refuse to run until the configuration block has been filled in
+		if not CONFIG_DONE then error "Nejdřív vyplň konfigurační blok na začátku skriptu a nastav CONFIG_DONE na true."
+
 		-- Wait for network availability (exits on timeout)
 		waitForNetwork(CHECK_SERVER)
 

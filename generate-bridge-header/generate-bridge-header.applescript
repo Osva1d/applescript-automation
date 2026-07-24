@@ -12,7 +12,13 @@
 property TOTAL_HEADER_WIDTH : 85
 property MAX_CLIENT_LENGTH : 25
 property MIN_SPACING : 2
+-- ===========================================================================
+-- KONFIGURACE — po vložení do Shortcutu přepiš PROJECT_BASE_PATH na svou cestu
+-- a nastav CONFIG_DONE na true. Skript se jinak odmítne spustit.
+-- ===========================================================================
+property CONFIG_DONE : false
 property PROJECT_BASE_PATH : "/Volumes/PrintServer/Projects/Print Production"
+-- ===========================================================================
 
 -- ---------------------------------------------------------------------------
 -- Helpers
@@ -415,6 +421,12 @@ end openInBridge
 on run argv
 	-- Accept both Shortcuts.app {input, parameters} and direct invocation (no args)
 	if class of argv is not list then set argv to {}
+
+	-- Guard: refuse to run until the configuration block has been filled in
+	if not CONFIG_DONE then
+		display notification "Nejdřív vyplň PROJECT_BASE_PATH a nastav CONFIG_DONE na true." with title "Bridge hlavička"
+		return argv
+	end if
 
 	-- Guard: verify volume is mounted before any file operations
 	if not my checkVolumeAvailable(PROJECT_BASE_PATH) then

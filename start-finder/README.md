@@ -23,6 +23,17 @@ Po přihlášení k macOS je potřeba ručně připojit síťové disky a otevř
 6. Pro automatické spuštění při přihlášení: Nastavení systému → Obecné → Přihlašovací položky → přidejte zkratku
 7. Nebo přiřaďte klávesovou zkratku / přidejte do menu baru
 
+## První spuštění
+
+Konfigurace je **přímo ve skriptu** v bloku `KONFIGURACE` na jeho začátku (žádný
+externí soubor). Po vložení skriptu do Shortcutu:
+
+1. Přepiš hodnoty v bloku `KONFIGURACE` na své — server, síťové disky (`SERVER_LIST`), cesty (`PANEL_PATHS`).
+2. Nastav `property CONFIG_DONE : true`.
+
+Bez kroku 2 se skript odmítne spustit a upozorní tě — pojistka proti běhu
+s neupravenými placeholder hodnotami.
+
 ## Konfigurace
 
 Upravte `property` konstanty na začátku skriptu:

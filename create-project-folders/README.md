@@ -22,6 +22,12 @@ Při zakládání nového tiskového projektu je potřeba ručně vytvořit slo�
 5. Pojmenujte zkratku (např. „Projektové složky")
 6. Přiřaďte klávesovou zkratku: Zkratka → Nastavení → Přidat klávesovou zkratku
 
+## První spuštění
+
+Konfigurace je **přímo ve skriptu** v bloku `KONFIGURACE` na jeho začátku. Po
+vložení skriptu do Shortcutu přepiš `PROJECT_BASE_PATH` na svou produkční cestu
+a nastav `property CONFIG_DONE : true`. Bez toho se skript odmítne spustit.
+
 ## Konfigurace
 
 Upravte `property` konstanty na začátku skriptu:

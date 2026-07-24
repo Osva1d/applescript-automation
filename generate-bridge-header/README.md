@@ -23,6 +23,12 @@ Při přípravě tiskových souborů v Adobe Bridge je potřeba do záhlaví vlo
 5. Pojmenujte zkratku (např. „Bridge hlavička")
 6. Přiřaďte klávesovou zkratku: Zkratka → Nastavení → Přidat klávesovou zkratku
 
+## První spuštění
+
+Konfigurace je **přímo ve skriptu** v bloku `KONFIGURACE` na jeho začátku. Po
+vložení skriptu do Shortcutu přepiš `PROJECT_BASE_PATH` na svou produkční cestu
+a nastav `property CONFIG_DONE : true`. Bez toho se skript odmítne spustit.
+
 ## Konfigurace
 
 Upravte `property` konstanty na začátku skriptu:
