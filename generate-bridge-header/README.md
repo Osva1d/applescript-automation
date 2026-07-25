@@ -87,6 +87,15 @@ Hlavička Bridge má pevnou šířku 85 znaků. Tato hodnota odpovídá šířce
 - Závisí na konkrétní DOM struktuře zakázkové stránky
 - Verze Bridge se detekuje automaticky z `/Applications/`, ale vyžaduje instalaci v default umístění
 
+## Řešení problémů
+
+- **„Nejdřív vyplň PROJECT_BASE_PATH…"** — Pojistka `CONFIG_DONE`. Skript ještě běží na placeholder cestě: uprav `PROJECT_BASE_PATH` v bloku `KONFIGURACE` na začátku skriptu a nastav `property CONFIG_DONE : true`.
+- **Safari neběží** — Spusťte Safari, otevřete stránku zakázky a zkuste znovu.
+- **Chyba při čtení dat ze Safari** — Skript čte konkrétní HTML strukturu stránky: `<span class="Header1">` s textem „Zakazka cislo: X.Y", a `<td class="TabColHead">` s popisky „Projekt:" / „Klient:" následované `<td class="TabValue">` s hodnotami. Pokud se rozvržení stránky změní, použijte manuální zadání (viz [Fallback](#fallback)).
+- **JavaScript nefunguje** — Zapněte menu Develop: Safari → Settings → Advanced → „Show features for web developers". Poté: Develop → Allow JavaScript from Apple Events.
+- **Adobe Bridge se neotevře** — Skript detekuje Bridge z `/Applications/Adobe Bridge 20*.app`. Vyžaduje instalaci v default umístění.
+- **„Disk není připojen"** — Připojte síťový disk `PrintServer` nebo upravte `PROJECT_BASE_PATH` v bloku `KONFIGURACE`.
+
 ## Changelog
 
 Viz [CHANGELOG.md](CHANGELOG.md).

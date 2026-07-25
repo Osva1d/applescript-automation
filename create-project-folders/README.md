@@ -79,9 +79,14 @@ Funkce `getCurrentYearSuffix()` je sdílena s projektem [`generate-bridge-header
 
 ## Řešení problémů
 
+- **„Nejdřív vyplň PROJECT_BASE_PATH…"** — Pojistka `CONFIG_DONE`. Skript ještě běží na placeholder cestě: uprav `PROJECT_BASE_PATH` v bloku `KONFIGURACE` na začátku skriptu a nastav `property CONFIG_DONE : true`.
+- **Safari neběží** — Spusťte Safari, otevřete stránku zakázky a zkuste znovu.
 - **„Safari nemá otevřenou stránku zakázky"** — Otevřete zakázkovou stránku v Safari a zkuste znovu.
 - **JavaScript nefunguje** — Zapněte menu Develop: Safari → Settings → Advanced → „Show features for web developers". Poté: Develop → Allow JavaScript from Apple Events.
-- **„Disk není připojen"** — Připojte síťový disk `PrintServer` nebo upravte `PROJECT_BASE_PATH` ve skriptu.
+- **Chyba při čtení dat ze Safari** — Skript čte konkrétní HTML strukturu stránky: `<span class="Header1">` s textem „Zakazka cislo: X.Y", a `<td class="TabColHead">` s popisky „Projekt:" / „Klient:" následované `<td class="TabValue">` s hodnotami. Pokud se rozvržení stránky změní, použijte manuální zadání (viz [Fallback](#fallback)).
+- **„Složka už existuje"** — Klikněte na „Otevřít složku" pro zobrazení existující struktury. Pro vytvoření nové změňte číslo zakázky nebo název projektu.
+- **„Název složky je příliš dlouhý"** — Limit macOS je 255 znaků (skript vynucuje 240). Zkraťte název klienta nebo projektu v zakázce, případně použijte manuální zadání s kratšími názvy.
+- **„Disk není připojen"** — Připojte síťový disk `PrintServer` nebo upravte `PROJECT_BASE_PATH` v bloku `KONFIGURACE`.
 
 ## Changelog
 

@@ -69,6 +69,8 @@ Funkce `createPanels` při spuštění **zavře všechna existující okna Finde
 
 ## Řešení problémů
 
+- **„Nejdřív vyplň konfigurační blok…"** — Pojistka `CONFIG_DONE`. Skript ještě běží na placeholder hodnotách: uprav blok `KONFIGURACE` na začátku skriptu (server, `SERVER_LIST`, `PANEL_PATHS`) a nastav `property CONFIG_DONE : true`. Vzorovou konfiguraci najdeš v [`examples/start-finder-config.txt`](../examples/start-finder-config.txt).
+- **„Síť nedostupná" po vypršení timeoutu** — Zkontrolujte připojení k síti; ověřte, že `CHECK_SERVER` míří na správný hostitel; na pomalých sítích zvyšte `NETWORK_TIMEOUT`.
 - **„Not allowed assistive access"** — Skript vyžaduje Accessibility permission: Nastavení systému → Soukromí a zabezpečení → Zpřístupnění → povolit Shortcuts.app (nebo terminál, ze kterého skript spouštíte)
 - **`WINDOW_BOUNDS` neodpovídá monitoru** — Zjistěte rozměry svého displeje příkazem v Script Editoru: `tell application "Finder" to get bounds of window of desktop`. Výsledek použijte jako hodnotu `WINDOW_BOUNDS`.
 
