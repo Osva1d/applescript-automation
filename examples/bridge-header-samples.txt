@@ -1,0 +1,28 @@
+# Bridge Header Samples - Ukázková data pro hlavičky
+
+Tento soubor obsahuje příklady vstupních dat a očekávaných výsledků pro `generate-bridge-header.applescript`.
+
+## Příklad 1: Standardní firma (s ořezem právní formy)
+- **Vstup Klient:** ACME Corporation, s.r.o.
+- **Vstup Technologie:** OFFSET
+- **Vstup Číslo:** 12345.01
+- **Očekávaný Klient:** ACME Corporation
+- **Očekávaný Header:**
+`ACME Corporation                 OFFSET                                        26_1234501`
+*(Pozicování se mění dle TOTAL_HEADER_WIDTH=85)*
+
+## Příklad 2: Velmi dlouhý název (s inteligentním zkrácením)
+- **Vstup Klient:** Velmi Dlouhý Název Klienta Který Se Nevejde Ani Náhodou a.s.
+- **Vstup Technologie:** DIGITÁLNÍ TISK
+- **Vstup Číslo:** 99887.00
+- **Výsledek:** Skript zkrátí název klienta tak, aby se technologie a číslo vešly do 85 znaků, přičemž zachová celé slovo na konci.
+- **Očekávaný Klient:** Velmi Dlouhý Název
+- **Očekávaný Header:**
+`Velmi Dlouhý Název            DIGITÁLNÍ TISK                                   26_9988700`
+
+## Příklad 3: Klient s diakritikou a speciálními znaky
+- **Vstup Klient:** Ředitelství silnic a dálnic ČR
+- **Vstup Technologie:** SÍTOTISK
+- **Vstup Číslo:** 55443.22
+- **Očekávaný Header (UTF-8):**
+`Ředitelství silnic a dálnic ČR    SÍTOTISK                                     26_5544322`

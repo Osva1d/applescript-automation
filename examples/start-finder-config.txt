@@ -1,0 +1,43 @@
+# start-finder.applescript — Example Configuration
+#
+# A TEMPLATE, not a filled-in configuration. Adjust these property values
+# in the script (block KONFIGURACE) to match your environment, then set
+# CONFIG_DONE to true. The values below are neutral examples.
+
+# ─── Configuration guard ─────────────────────────────────────────
+# The script refuses to run while this is false. Set it to true once
+# you have replaced the values below with your own.
+property CONFIG_DONE : false
+
+# ─── Network check ───────────────────────────────────────────────
+# Server used to verify network availability before mounting volumes.
+property CHECK_SERVER : "fileserver.local"
+
+# ─── Server list ─────────────────────────────────────────────────
+# Each entry: {dName:"VolumeName", dAddr:"protocol://host/share"}
+# Supported protocols: afp://, smb://  (both may be mixed, as below)
+property SERVER_LIST : {¬
+    {dName:"PrintData", dAddr:"afp://fileserver.local/PrintData"}, ¬
+    {dName:"Print", dAddr:"afp://fileserver.local/Print"}, ¬
+    {dName:"Studio", dAddr:"afp://fileserver.local/Studio"}, ¬
+    {dName:"HD Workstation Three", dAddr:"smb://workstation-three.local/HD Workstation Three"}}
+
+# ─── Finder panel paths ─────────────────────────────────────────
+# POSIX paths for Finder tabs. First path = main window target.
+# Paths pointing to unmounted volumes are silently skipped.
+# Note: every path below lives on a volume mounted by SERVER_LIST above.
+property PANEL_PATHS : {¬
+    "/Volumes/PrintData", ¬
+    "/Volumes/Print", ¬
+    "/Volumes/Print/Zund", ¬
+    "/Volumes/Studio"}
+
+# ─── Timing ──────────────────────────────────────────────────────
+property NETWORK_TIMEOUT : 60   -- seconds to wait for network
+property TAB_DELAY : 0.6        -- seconds between tab creation (increase on slow machines)
+
+# ─── Window ──────────────────────────────────────────────────────
+# {left, top, right, bottom} in pixels
+# Tip: Run in Script Editor to find your screen size:
+#   tell application "Finder" to get bounds of window of desktop
+property WINDOW_BOUNDS : {50, 50, 1600, 1000}
