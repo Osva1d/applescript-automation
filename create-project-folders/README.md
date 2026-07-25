@@ -83,37 +83,6 @@ Funkce `getCurrentYearSuffix()` je sdílena s projektem [`generate-bridge-header
 - **JavaScript nefunguje** — Zapněte menu Develop: Safari → Settings → Advanced → „Show features for web developers". Poté: Develop → Allow JavaScript from Apple Events.
 - **„Disk není připojen"** — Připojte síťový disk `PrintServer` nebo upravte `PROJECT_BASE_PATH` ve skriptu.
 
-## Deploy do veřejného repo
-
-Veřejná verze tohoto skriptu je v repo `applescript-automation`.
-Deploy postup viz `_deploy/PLACEHOLDERS.md` v kořeni incubátoru.
-
-Při deployi se reálné hodnoty v property sekcích automaticky nahrazují
-placeholdery (skript `_deploy/anonymize.sh`).
-
 ## Changelog
 
-### v1.3.0 (2026-03)
-- Aktuální verze
-
----
-
-## For GitHub
-
-### Create Project Folders — Automated Project Directory Setup for Print Production
-
-A macOS AppleScript automation that reads order data from a web-based order management system (via Safari) and creates a standardized project folder structure on a shared volume.
-
-**The problem:** In a print production studio handling 8–15 new orders per week, each order requires a folder with a specific naming convention (`orderNumber - clientName - projectName`) and a set of subfolders. Doing this manually means switching between browser and Finder, copying text, creating folders, and double-checking names. Multiply by 10+ orders per week, and it adds up to hours of repetitive work per month.
-
-**What it does:**
-- Extracts order number, client name, and project name from the active Safari tab via JavaScript DOM injection
-- Sanitizes text for filesystem safety (removes special characters, collapses whitespace)
-- Shows a confirmation dialog with the exact folder name before creating anything
-- Creates the full folder hierarchy in one step
-- Offers to reveal the new folder in Finder after creation
-- Falls back to manual input if automatic extraction fails
-
-**How it runs:** As a Shortcuts.app shortcut triggered by a keyboard shortcut. One keypress, one confirmation, done.
-
-**Requirements:** macOS 13+, Safari with JavaScript from Apple Events enabled.
+Viz [CHANGELOG.md](CHANGELOG.md).

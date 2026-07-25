@@ -72,18 +72,9 @@ Funkce `createPanels` při spuštění **zavře všechna existující okna Finde
 - **„Not allowed assistive access"** — Skript vyžaduje Accessibility permission: Nastavení systému → Soukromí a zabezpečení → Zpřístupnění → povolit Shortcuts.app (nebo terminál, ze kterého skript spouštíte)
 - **`WINDOW_BOUNDS` neodpovídá monitoru** — Zjistěte rozměry svého displeje příkazem v Script Editoru: `tell application "Finder" to get bounds of window of desktop`. Výsledek použijte jako hodnotu `WINDOW_BOUNDS`.
 
-## Deploy do veřejného repo
-
-Veřejná verze tohoto skriptu je v repo `applescript-automation`.
-Deploy postup viz `_deploy/PLACEHOLDERS.md` v kořeni incubátoru.
-
-Při deployi se reálné hodnoty v property sekcích automaticky nahrazují
-placeholdery (skript `_deploy/anonymize.sh`).
-
 ## Changelog
 
-### v14.4.1 (2026-03)
-- Aktuální verze
+Viz [CHANGELOG.md](CHANGELOG.md).
 
 ## Známá omezení
 
