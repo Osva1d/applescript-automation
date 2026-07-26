@@ -1,8 +1,8 @@
 -- ===========================================================================
 -- Script:      Create Project Folders
 -- Version:     1.0.0
--- Author:      Osva1d
--- Updated:     2026-03-15
+-- Author:      Ladislav Osvald
+-- Updated:     2026-06-28
 -- Description: Creates project folder structure from Safari order page data.
 -- ===========================================================================
 
