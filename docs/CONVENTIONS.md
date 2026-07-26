@@ -25,6 +25,15 @@ Rozdělení podle **vynutitelnosti**:
   byla neviditelná).
 - **Identita commitů** — `git config --global user.email` = noreply + GitHub
   „Block command line pushes that expose my email". Push se skutečnou adresou neprojde.
+- **Commit na `main`** — `tools/hooks/pre-commit` ho odmítne; merge do main pustí
+  (rozpozná probíhající merge přes `MERGE_HEAD`). Instaluje `tools/install-hooks.sh`.
+- **Force push na `github`** — `tools/hooks/pre-push` odmítne non-fast-forward push
+  na veřejný remote (force detekuje nepřímo přes `git merge-base --is-ancestor`,
+  protože hook nevidí příznaky příkazové řádky). Na `origin` force projde.
+- **Verze ↔ CHANGELOG** — `tools/check-versions.sh` ověří u každého skriptu, že
+  hlavička `Version:` == verze nejnovější položky CHANGELOGu **a** hlavička
+  `Updated:` == datum té položky. **Spouští se ručně při releasu**, ne z hooku:
+  tyhle hodnoty se mění při vydání, kontrolovat je při každém commitu je šum.
 
 ## TEMPLATE — kopíruj z `templates/`
 
@@ -40,8 +49,16 @@ Rozdělení podle **vynutitelnosti**:
 Description`, rámovaná `-- ===`. `Author` je vždy **`Ladislav Osvald`**.
 
 **`Updated:` = datum verze**, ne datum poslední editace. Musí odpovídat datu
-poslední položky v `CHANGELOG.md`. Ručně udržované „datum editace" duplikovalo git
-a driftlo — jako datum verze se mění jen při vydání.
+nejnovější položky v `CHANGELOG.md` — hlídá `tools/check-versions.sh`. Ručně
+udržované „datum editace" duplikovalo git a driftlo; jako datum verze se mění jen
+při vydání, a proto je kontrolovatelné.
+
+> **Proč tady jinak než v `extendscript-automation`.** Tam je stejné pole
+> **generované buildem** z data posledního commitu `src/` — a proto se
+> **nekontroluje** (nemůže driftovat, a v lokálním dev buildu se legitimně liší od
+> data releasu). Tady žádný build není: pole píše člověk, takže drift hrozí a
+> kontrola dává smysl. Rozdíl je důsledek mechaniky platformy, ne nedodělek —
+> stejně jako dvě podoby guardu níže.
 
 **Konfigurace je ve skriptu**, ne v externím souboru:
 ```applescript

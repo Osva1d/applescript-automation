@@ -1,0 +1,77 @@
+#!/bin/bash
+# ===========================================================================
+# Script:      pre-push
+# Version:     1.0.0
+# Author:      Ladislav Osvald
+# Updated:     2026-07-26
+#
+# Description:
+#   Refuses a history-rewriting push to the PUBLIC remote ('github').
+#   Rewriting published history breaks every clone and is a last resort that
+#   belongs to a deliberate, backed-up procedure — never to a routine push.
+#   Pushes to 'origin' (Codeberg, private backup) are left alone: force there
+#   is legitimate.
+#
+#   HOW FORCE IS DETECTED — this matters:
+#   A pre-push hook does NOT see command-line flags; there is no --force to
+#   read. Git passes the remote name as $1 and feeds ref updates on stdin:
+#       <local ref> <local sha> <remote ref> <remote sha>
+#   So force is detected INDIRECTLY: if <remote sha> is not an ancestor of
+#   <local sha>, the push is non-fast-forward — i.e. it would drop commits
+#   that exist on the remote. That is the thing worth blocking, whatever flag
+#   produced it. (Trying to parse the command line would silently never fire —
+#   a falsely green hook.)
+#
+#   Installed by tools/install-hooks.sh. Bypass for a one-off: git push --no-verify
+# ===========================================================================
+
+set -euo pipefail
+
+REMOTE_NAME="${1:-}"
+PROTECTED_REMOTE="github"
+ZERO="0000000000000000000000000000000000000000"
+
+# Other remotes (origin = private backup) are none of this hook's business.
+if [ "$REMOTE_NAME" != "$PROTECTED_REMOTE" ]; then
+    exit 0
+fi
+
+while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
+    [ -z "${LOCAL_REF:-}" ] && continue
+
+    # Deleting a remote branch: local sha is all zeros.
+    if [ "$LOCAL_SHA" = "$ZERO" ]; then
+        echo "" >&2
+        echo "BLOCKED: deleting '$REMOTE_REF' on the public remote '$REMOTE_NAME'." >&2
+        echo "  Deliberate exception: git push --no-verify" >&2
+        echo "" >&2
+        exit 1
+    fi
+
+    # Creating a new remote branch: remote sha is all zeros — nothing to lose.
+    if [ "$REMOTE_SHA" = "$ZERO" ]; then
+        continue
+    fi
+
+    # The real test: is the remote tip still reachable from what we push?
+    # If not, this push drops published commits (a force, by any flag).
+    if ! git merge-base --is-ancestor "$REMOTE_SHA" "$LOCAL_SHA" 2>/dev/null; then
+        echo "" >&2
+        echo "BLOCKED: non-fast-forward push to the public remote '$REMOTE_NAME'." >&2
+        echo "" >&2
+        echo "  ref:       $REMOTE_REF" >&2
+        echo "  on remote: ${REMOTE_SHA:0:7}  (not an ancestor of what you push)" >&2
+        echo "  local:     ${LOCAL_SHA:0:7}" >&2
+        echo "" >&2
+        echo "  This would drop commits that are already public." >&2
+        echo "  Normal fix — bring the remote work in first:" >&2
+        echo "     git fetch $REMOTE_NAME && git rebase $REMOTE_NAME/main   (or merge)" >&2
+        echo "" >&2
+        echo "  A real history rewrite is a deliberate procedure: verify a bundle" >&2
+        echo "  backup first, then: git push --no-verify --force-with-lease $REMOTE_NAME <branch>" >&2
+        echo "" >&2
+        exit 1
+    fi
+done
+
+exit 0
