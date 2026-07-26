@@ -1,0 +1,45 @@
+#!/bin/bash
+# ===========================================================================
+# Script:      pre-commit
+# Version:     1.0.0
+# Author:      Ladislav Osvald
+# Updated:     2026-07-26
+#
+# Description:
+#   Refuses a commit made directly on `main`. Work belongs on a branch; `main`
+#   holds only finished, merged states.
+#
+#   Merge commits are allowed: `git merge --no-ff feat/x` creates a commit ON
+#   main by design. During a merge git writes .git/MERGE_HEAD — that is how we
+#   tell "merging into main" (legitimate) from "committing on main" (mistake).
+#   Without this check the hook would make merging impossible.
+#
+#   Installed by tools/install-hooks.sh. Bypass for a one-off: git commit --no-verify
+# ===========================================================================
+
+set -euo pipefail
+
+BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+GIT_DIR="$(git rev-parse --git-dir)"
+
+# A merge in progress writes MERGE_HEAD — let it through.
+if [ -f "$GIT_DIR/MERGE_HEAD" ]; then
+    exit 0
+fi
+
+if [ "$BRANCH" = "main" ]; then
+    echo "" >&2
+    echo "BLOCKED: direct commit on 'main'." >&2
+    echo "" >&2
+    echo "  main holds finished states only — work happens on a branch." >&2
+    echo "" >&2
+    echo "  Move this work to a branch (the staged changes follow you):" >&2
+    echo "     git switch -c feat/<name>" >&2
+    echo "" >&2
+    echo "  Merges into main are allowed and are not affected by this hook." >&2
+    echo "  Deliberate exception: git commit --no-verify" >&2
+    echo "" >&2
+    exit 1
+fi
+
+exit 0
