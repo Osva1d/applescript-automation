@@ -7,9 +7,9 @@ Rozdělení podle **vynutitelnosti**:
 
 | značka | co to znamená |
 |---|---|
-| 🔒 **vynuceno** | zastaví běh nebo push |
-| 📋 **šablona** | v `templates/` — kopíruj, nepiš znovu |
-| 📝 **prosa** | nikdo to nehlídá; drž se toho, nebo to změň vědomě |
+| **ENFORCED** | zastaví běh nebo push |
+| **TEMPLATE** | v `templates/` — kopíruj, nepiš znovu |
+| **GUIDANCE** | nikdo to nehlídá; drž se toho, nebo to změň vědomě |
 
 > **Proč jiné konvence než `extendscript-automation`:** jiný jazyk, žádný build,
 > jiná instalace (copy-paste do Shortcuts.app místo souboru v Presets). Sjednocovat
@@ -17,7 +17,7 @@ Rozdělení podle **vynutitelnosti**:
 
 ---
 
-## 🔒 Vynuceno
+## ENFORCED — hlídá stroj
 
 - **`CONFIG_DONE` guard** — každý skript začíná `property CONFIG_DONE : false`
   a odmítne běžet, dokud ji uživatel nepřepne na `true`. Chrání před prvním během
@@ -26,7 +26,7 @@ Rozdělení podle **vynutitelnosti**:
 - **Identita commitů** — `git config --global user.email` = noreply + GitHub
   „Block command line pushes that expose my email". Push se skutečnou adresou neprojde.
 
-## 📋 Šablony (`templates/`)
+## TEMPLATE — kopíruj z `templates/`
 
 - `script-header.applescript` — hlavička + `KONFIGURACE` blok + guard + `on run` kostra
 - `README.md` — kostra README skriptu
@@ -34,7 +34,7 @@ Rozdělení podle **vynutitelnosti**:
 
 ---
 
-## 📝 Kód
+## GUIDANCE — Kód
 
 **Hlavička skriptu** — pět polí v pořadí `Script / Version / Author / Updated /
 Description`, rámovaná `-- ===`. `Author` je vždy **`Ladislav Osvald`**.
@@ -81,7 +81,7 @@ upozorní a pokračuje, není guard** — vždy musí následovat `error` nebo `
 **Komentáře anglicky**, sekční separátory `-- ---------`. Uživatelské texty
 (dialogy, notifikace) **česky**.
 
-## 📝 Git
+## GUIDANCE — Git
 
 **Conventional Commits** — 100 % commitů. Typy: `chore`, `docs`, `feat`, `revert`.
 
@@ -91,7 +91,7 @@ upozorní a pokračuje, není guard** — vždy musí následovat `error` nebo `
 
 **Větve** — `feat/`, `fix/`, `docs/` + krátký popis; merge do `main` vědomě `--no-ff`.
 
-## 📝 Dokumentace
+## GUIDANCE — Dokumentace
 
 **Root:** `README.md` + `README.cs.md` (rozcestník, plná parita), `LICENSE`,
 `examples/` (šablony konfigurace a ukázková data).
@@ -112,7 +112,7 @@ odkazuje. Interní řadu pod „Před veřejným vydáním (interní řada)".
 minor = nová schopnost/změna chování, major = rozbití existující konfigurace.
 Bump = hlavička skriptu + `CHANGELOG.md` + `Updated:` na datum verze.
 
-## 📝 Distribuce
+## GUIDANCE — Distribuce
 
 **Žádný build, žádné Release assety** — zdroj *je* deliverable. Uživatel kopíruje
 `.applescript` z repa do akce „Run AppleScript". Tagy proto neznačí artefakt, jen
