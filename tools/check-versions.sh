@@ -17,7 +17,7 @@
 #   something. Both the version and the DATE are checked, because in this repo
 #   `Updated:` means "date of the version" and changes only at release
 #   (in ES the same field is generated from the last src commit, so its date is
-#   deliberately not checked there — see docs/CONVENTIONS.md in both repos).
+#   deliberately not checked there — see docs/conventions.md in both repos).
 #
 #   Run it as part of the release ritual, not on every commit: these values
 #   change when you release, so checking each commit would be noise.
